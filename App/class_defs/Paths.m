@@ -33,19 +33,19 @@ classdef  Paths
                        error("With 'given' must also give full path to data, as third input ");
                    end
                case 'relative'
-                   DataDir = [current_data_path ,'\..\..\Data'];
+                   DataDir = current_data_path  + "\..\..\Data" ;
                otherwise
                    error("Method input is wrong. See correct input");
            end % switch
            
            % complete all paths
-           [ self.AllFolders , self.AllPictures ] = get_all_paths(current_data_path , DataDir);
+           [ self.AllDirectories , self.AllPictures ] = get_all_paths(current_data_path , DataDir);
            
            %For easy use, seperate all good pictures that can be used.
            self.AvailablePictures = struct(); 
-           self.AvailablePictures.RedImage1 = self.AllPaths.RedlImage;
-           self.AvailablePictures.NaturalImage1 = self.AllPaths.NaturalImage;
-           self.AvailablePictures.Brain =  self.AllPaths.Brain;
+           self.AvailablePictures.RedImage1 = self.AllPictures.RedlImage;
+           self.AvailablePictures.NaturalImage1 = self.AllPictures.NaturalImage;
+           self.AvailablePictures.Brain =  self.AllPictures.Brain;
        end %Paths (c'tor)
        
 
@@ -72,9 +72,9 @@ function [ Directories , Pictures] =  get_all_paths(CurrentDir , DataDir)
     Directories.SuperDirectory2_Before = DataDir + filesep + "2nd set - light"+ filesep +"BEFORE";
     Directories.SuperDirectory2_After   = DataDir + filesep  + "2nd set - light"+ filesep +"AFTER"  ;
     Directories.After21 = Directories.SuperDirectory2_After +  filesep  + "21" ;
-    Directories.NaturalImage = [Directories.Folder , filesep , '21_B2R_1'  , '.tif'];
+    Pictures.NaturalImage = Directories.After21 + filesep + "21_B2R_1"  + ".tif'" ;
     
-    Directories.SuperDirectory1 = [DataDir ,filesep, '1st set - red'];
-    Directories.RedlImage = [Directories.SuperDirectory1 , filesep , '2 - no segmentation' , '.png'];
+    Directories.SuperDirectory1 = DataDir + filesep + "1st set - red";
+    Pictures.RedlImage =  Directories.SuperDirectory1 + filesep +  "2 - no segmentation"  + ".png" ;
     
 end

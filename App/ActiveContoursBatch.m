@@ -1,5 +1,5 @@
 close all ; clear all; clc;
-
+addpath(genpath(pwd))
 %%
 Control = struct();
 Control.is_plot_all = true;
@@ -19,7 +19,7 @@ Paths = Paths(pwd);
 
 %{ =-=-=-=  load image =-=-=-=  }%
 OriginalImage = imread(  Paths.AvailablePictures.NaturalImage1 );
-Paths.AvailablePictures.
+Paths.AvailablePictures
 
 try
     GreyImage = rgb2gray(OriginalImage);
