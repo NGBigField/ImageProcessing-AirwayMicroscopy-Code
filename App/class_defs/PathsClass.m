@@ -1,4 +1,4 @@
-classdef  Paths
+classdef  PathsClass
     
    properties
        AllDirectories
@@ -8,31 +8,31 @@ classdef  Paths
    end
     
    methods ( Access = public)
-       function self = Paths(current_data_path , method , given_data_path)
-           %self = Paths(FullPath)  c'tor for Paths object
+       function self = PathsClass(current_data_path , method , given_data_path)
+           %PathsClass(FullPath)  c'tor for Paths object
            % input: 1.  fullpath 
-           %            2.  method:  'Relative'   /  'Search'   / 'Given'  - method for searching for data.
+           %            2.  method:  'Relative' (Default)   /  'Search'   / 'Given'    : methods for searching for data.
            %            3. if method=='Given' :  path to Data folder
            
            % check input arguments
-           if (nargin >= 2) && (~ischar(method) || ~isstring(method))
+           if (nargin >= 2) &&  ~ischar(method) && ~isstring(method) 
                error("Method input must be a string");
            end
            if (nargin == 1) %complete data with relative path
-               method = 'relative';
+               method = "relative";
            end
            % act according to input:
-           method = lower(method); % lower case (insesitive string switch)
+           method = lower(string(method)); % lower case (insesitive string switch)
            switch method
-               case 'search'
-                   %Not yet implementd
-               case 'given'
+               case "search"
+                   DataDir = search_DataDir(current_data_path);
+               case "given"
                    if (nargin >= 3)
                        DataDir =  given_data_path;
                    else
                        error("With 'given' must also give full path to data, as third input ");
                    end
-               case 'relative'
+               case "relative"
                    DataDir = current_data_path  + "\..\..\Data" ;
                otherwise
                    error("Method input is wrong. See correct input");
@@ -78,3 +78,28 @@ function [ Directories , Pictures] =  get_all_paths(CurrentDir , DataDir)
     Pictures.RedlImage =  Directories.SuperDirectory1 + filesep +  "2 - no segmentation"  + ".png" ;
     
 end
+
+function DataDir = search_DataDir(mainAppPath)
+current_folder=mainAppPath;
+%forbiedn directory (where to stop)  is base directory:
+C = strsplit(mainAppPath,filesep);
+rootFolder = C(1)+filesep+C(2);
+
+prev_folder = current_folder;
+DataDir = [] ;
+while prev_folder ~= rootFolder  % Don't go too deep
+    prev_folder = cd(current_folder+filesep+"..")    ; % go to parent folder 
+    prev_folder  = string(prev_folder );
+    current_folder = prev_folder+filesep+".." ; %update current folder as parent folder
+    [is_found] = check_exist_folder(current_folder , "Data");
+    if is_found
+        DataDir = current_folder + filesep + "Data";
+        cd(mainAppPath);
+        return
+    end
+end
+
+error("Couldn't find ""Data"" folder");
+
+end
+

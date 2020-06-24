@@ -5,7 +5,7 @@ function ImageOut = add_mask(ImageIn ,MaskIn , rgb)
         [indexedImage , cmap] = gray2ind(ImageIn);
         ImageOut = ind2rgb(indexedImage , cmap);
     else
-        ImageOut = ImageIn;
+        ImageOut = im2double( ImageIn );
     end
 
     intensityFactor = 0.4;
