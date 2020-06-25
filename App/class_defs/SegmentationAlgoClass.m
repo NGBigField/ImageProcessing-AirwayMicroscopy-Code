@@ -6,16 +6,18 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
     properties
         Params= default_params();
 
-        Mask  % the thing that we're looking for.
+        Masks_cell = {}  % the thing that we're looking for.
         ImagesManager % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
+        WindowsManager ; % Manges and controls all open apps and windows
         
         is_inProgress = false;
     end
     
     methods (Access = public)
-        function obj = SegmentationAlgoClass(ImagesManager)
+        function obj = SegmentationAlgoClass(ImagesManager , WindowsManager)
             %SegmentationAlgoClass Construct an instance of this class
             obj.ImagesManager = ImagesManager;
+            obj.WindowsManager = WindowsManager;
             obj.Params = default_params();
         end
         
@@ -35,41 +37,64 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             end %Switch
         
         end
-
+        function [  ] = start_or_stop_algorithm(obj)
+            if obj.is_inProgress
+                % Stop"
+                obj.stop_algorithm();
+            else
+                % Start:
+                obj.start_algorithm();
+            end
+        end % start_or_stop_algorithm(obj)
         function [] = start_algorithm(obj)
-            if isempty( obj.Mask )
-                warning("Choose Region Of Interest 'Roi' before starting algorithm");
+            %check if we're ready:
+            if isempty( obj.Masks_cell )
+                warning("Choose Region Of Interest 'ROI'  before starting algorithm");
+                obj.stop_algorithm();
                 return
             end
+            %update:
             obj.is_inProgress = true;
+            obj.WindowsManager.set_algoInProgress(  "on" );
+            %go:
             switch obj.Params.General.ChosenAlgorithm
                 case AvailableAlgorithms.MatlabBuiltIn
                     obj.start_MatlabBuiltIn();
                 case AvailableAlgorithms.Lankton
                     obj.start_Lankton();
                 case AvailableAlgorithms.Watershed
-                    
+                    obj.start_Watershed();
                 otherwise
                         error("Unkown AlgorithmFunction");
             end%switch
+            obj.stop_algorithm();
         end % start_algorithm 
         function  [] = stop_algorithm(obj)
+            %update:
             obj.is_inProgress = false;
+            obj.WindowsManager.set_algoInProgress(  "off" );
         end % stop_algorithm
-        
+        function [] = add_mask(obj , Mask)
+            obj.Masks_cell{end+1} = Mask;
+        end
+        function [] = clear_masks(obj)
+            obj.Masks_cell = {};
+        end
     end % methods (Access = public)
     
     methods (Access = protected)
         function [] = start_MatlabBuiltIn(obj)
-            
+            obj.stop_algorithm();
         end % start_MatlabBuiltIn
         function [] = start_Lankton(obj)
             
         end % start_MatlabBuiltIn
         function [] = start_Watershed(obj)
-            
+            [newMask ] = WaterShed(obj.ImagesManager.GreyImage , obj.Masks_cell , obj.Params.WaterShed);
+            obj.ImagesManager.mask_over_image( newMask  , "FromScratch" );
         end % start_Watershed
     end %  (Access = protected)
+    
 end % class
 
 %{

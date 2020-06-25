@@ -4,22 +4,24 @@ classdef ImagesManagerClass < handle
     
     properties
         %control:
-        WindowsManager
+        WindowsManager % Manges and controls all open apps and windows
         %images:
         OriginalImage
         GreyImage
         Image2Show  
         %params:
-        is_display_
+        ApearanceValues
     end
     
     methods (Access = public)
         %% C'tor
-        function obj = ImagesManagerClass(WindowsManager)
+        function obj = ImagesManagerClass(WindowsManager , ApearanceValues)
             %IMAGESCONTROLCLASS Construct an instance of this class
-            %   Input:  handle to WindowsManager object that controls all the apps\windows
+            %   Input:  WindowsManager  - handle to WindowsManager object that controls all the apps\windows
+            %                ApearanceValues    - struct with properties.
             obj.WindowsManager = WindowsManager;
-            obj.WindowsManager.set_ImagesControl(obj);
+            obj.WindowsManager.set_ImagesControl(obj); % pass 'self' to  ImagesControlClass .
+            obj.ApearanceValues = ApearanceValues;
         end
 
         %% Get / Set:
@@ -38,8 +40,16 @@ classdef ImagesManagerClass < handle
             NewIm = imcrop(obj.OriginalImage , roi.Position ) ;
             obj.set_original_image(NewIm);
         end
-        function [] = add_mask(obj ,Mask , ApearanceValues )
-            obj.Image2Show = add_mask(   obj.OriginalImage  ,  Mask  ,  ApearanceValues.MaskColor );
+        function [] = mask_over_image(obj , Mask  , option )
+            if nargin >=3  &&  option == "FromScratch"
+                obj.Image2Show = add_mask_over_image(   obj.OriginalImage  ,  Mask  ,  obj.ApearanceValues.MaskColor );
+            else
+                obj.Image2Show = add_mask_over_image(   obj.Image2Show    ,  Mask  ,  obj.ApearanceValues.MaskColor );
+            end
+            obj.show_image();
+        end
+        function [] = clear_masks(obj)
+            obj.update_images_from_OriginalImage();
             obj.show_image();
         end
         

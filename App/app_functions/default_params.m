@@ -11,5 +11,8 @@ function [Params] = default_params()
     Params.MatlabBuiltIn.ContractionBias =  0.01;
     Params.MatlabBuiltIn.Method               = AvailableAlgorithms.MatlabBuiltInMethods.Edge;
     
+    Params.WaterShed = struct();
+    
+    
 end
 

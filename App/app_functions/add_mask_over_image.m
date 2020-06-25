@@ -1,4 +1,4 @@
-function ImageOut = add_mask(ImageIn ,MaskIn , rgb)
+function ImageOut = add_mask_over_image(ImageIn ,MaskIn , rgb)
     
     % In case input image is gray, Make an RGB Image, still gray :
     if size(ImageIn , 3) == 1

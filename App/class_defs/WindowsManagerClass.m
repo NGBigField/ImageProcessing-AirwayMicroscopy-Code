@@ -52,7 +52,16 @@ classdef WindowsManagerClass  < handle
                         error('Wrong windiw_name_str string ');
             end % switch
         end
-        
+        function [] = set_algoInProgress( obj , on_off_str )
+            switch lower(string(on_off_str))
+                case "on"
+                    disp("WindowsManagerClass: setting algo in progress: 'on' ");
+                case "off"
+                    disp("WindowsManagerClass: setting algo in progress: 'off' ");
+                otherwise
+            end % switch
+            obj.MainApp.set_algoInProgress(on_off_str)
+        end % set_algoInProgress( on_off_str )
     end % methods (Access = public)
     
 end % classdef
