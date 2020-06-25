@@ -6,7 +6,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
     properties
         Params= default_params();
 
-        Mask  % the thing that we're looking for.
+        mask  % the thing that we're looking for.
         ImagesManager % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
         
         is_inProgress = false;
@@ -37,10 +37,10 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         end
 
         function [] = start_algorithm(obj)
-            if isempty( obj.Mask )
+            if empty( obj.mask )
                 warning("Choose Region Of Interest 'Roi' before starting algorithm");
                 return
-            end
+            
             obj.is_inProgress = true;
             switch obj.Params.General.ChosenAlgorithm
                 case AvailableAlgorithms.MatlabBuiltIn

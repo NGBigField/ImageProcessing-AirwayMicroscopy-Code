@@ -51,13 +51,10 @@ classdef ImagesManagerClass < handle
     
     methods (Access = protected)
         function [] = update_images_from_OriginalImage(obj)
-            if ndims( obj.OriginalImage )==3 % if Colored Image:
-                obj.GreyImage = rgb2gray(obj.OriginalImage);
-            elseif ismatrix( obj.OriginalImage )   %If gray Image:
-                obj.GreyImage = obj.OriginalImage;
-            else
-                error("Wrong number image dimensions");
-            end
+            if  obj.OriginalImage % if Colred Image:
+            
+            %If gray Image:
+            obj.GreyImage = rgb2gray(obj.OriginalImage);
             obj.Image2Show = obj.OriginalImage;
         end
     end % methods (Access = protected)

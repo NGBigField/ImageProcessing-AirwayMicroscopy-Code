@@ -2,11 +2,10 @@ classdef AvailableAlgorithms
     %ALGOPARAMS what can be used here
     %   enumeration and stuff
     enumeration
-        MatlabBuiltIn , ...
-        Lankton , ...
+        MatlabBuiltIn 
+        Lankton 
         Watershed
     end
-    
     
     methods (Static)
         function cell_array = string_cell_array()
