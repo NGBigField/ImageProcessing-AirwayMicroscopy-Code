@@ -1,1 +1,5 @@
+Algo stuff:
 Shawn Lankton (2020). Active Contour Segmentation (https://www.mathworks.com/matlabcentral/fileexchange/19567-active-contour-segmentation), MATLAB Central File Exchange. Retrieved May 31, 2020.
+
+App stuff:
+Jan (2020). GetFullPath (https://www.mathworks.com/matlabcentral/fileexchange/28249-getfullpath), MATLAB Central File Exchange. Retrieved August 14, 2020.

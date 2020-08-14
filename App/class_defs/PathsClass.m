@@ -38,6 +38,9 @@ classdef  PathsClass
                    error("Method input is wrong. See correct input");
            end % switch
            
+           %Make DataDir into a full path not relative (without  '\..\..\'):
+           DataDir=string(GetFullPath(char(DataDir)));
+           
            % complete all paths
            [ self.AllDirectories , self.AllPictures ] = get_all_paths(current_data_path , DataDir);
            
