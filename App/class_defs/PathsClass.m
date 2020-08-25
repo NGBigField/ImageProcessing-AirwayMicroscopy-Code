@@ -70,15 +70,15 @@ function [ Directories , Pictures] =  get_all_paths(CurrentDir , DataDir)
     Directories.CurrentDir = CurrentDir;
     Directories.DataDir = DataDir;
     
-    Pictures.Brain =  CurrentDir + filesep + "example_data"  + filesep +  "medtest.png" ;
+    Pictures.Brain =  CurrentDir + filesep + "example_data"  + filesep +  "medtest"+".png" ;
     
     Directories.SuperDirectory2_Before = DataDir + filesep + "2nd set - light"+ filesep +"BEFORE";
     Directories.SuperDirectory2_After   = DataDir + filesep  + "2nd set - light"+ filesep +"AFTER"  ;
     Directories.After21 = Directories.SuperDirectory2_After +  filesep  + "21" ;
-    Pictures.NaturalImage = Directories.After21 + filesep + "21_B2L"  + ".tif'" ;
+    Pictures.NaturalImage = Directories.After21 + filesep + "21_B2L.tif"  ;
     
     Directories.SuperDirectory1 = DataDir + filesep + "1st set - red";
-    Pictures.RedlImage =  Directories.SuperDirectory1 + filesep +  "2 - no segmentation"  + ".png" ;
+    Pictures.RedlImage =  Directories.SuperDirectory1 + filesep +  "2 - no segmentation"+".png" ;
     
 end
 
