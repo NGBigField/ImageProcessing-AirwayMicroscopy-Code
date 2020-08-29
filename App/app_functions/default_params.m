@@ -14,6 +14,11 @@ function [Params] = default_params()
     Params.WaterShed = struct();
     Params.WaterShed.Tolerance = 12; % in the range [0 , 255]
     
+    Params.AdaptiveThreshold = struct();
+    Params.AdaptiveThreshold.WindowSize = 50;
+    Params.AdaptiveThreshold.MeanOrMedian = 0; %0 = mean, 1 = median
+    Params.AdaptiveThreshold.Threshold = 0.03;
+    Params.AdaptiveThreshold.SE = strel('disk',3);
     
 end
 

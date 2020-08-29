@@ -84,15 +84,15 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
     
     methods (Access = protected)
         function [] = start_MatlabBuiltIn(obj)
-            obj.stop_algorithm();
+            %obj.stop_algorithm(); %not needed
         end % start_MatlabBuiltIn
         function [] = start_Lankton(obj)
-            obj.stop_algorithm();
+            %obj.stop_algorithm(); %not needed
         end % start_MatlabBuiltIn
         function [] = start_Watershed(obj)
             [newMask ] = WaterShed(obj.ImagesManager.GreyImage , obj.Masks_cell , obj.Params.WaterShed);
             obj.ImagesManager.mask_over_image( newMask  , "FromScratch" );
-            obj.stop_algorithm();
+            %obj.stop_algorithm(); %not needed
         end % start_Watershed
     end %  (Access = protected)
     
