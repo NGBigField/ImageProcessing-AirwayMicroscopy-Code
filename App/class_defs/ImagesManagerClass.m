@@ -52,7 +52,9 @@ classdef ImagesManagerClass < handle
             obj.update_images_from_OriginalImage();
             obj.show_image();
         end
-        
+        function [] = histogram_equalization(obj)
+            obj.GreyImage = insert_code_here( obj.GreyImage );
+        end
         %% Windows and Visuals:
         function [] = show_image(obj)
             obj.WindowsManager.show_image(obj.Image2Show);
