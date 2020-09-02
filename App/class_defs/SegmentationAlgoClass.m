@@ -10,17 +10,18 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         ImagesManager % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
         WindowsManager ; % Manges and controls all open apps and windows
         
-        is_inProgress = false;
+        State  = AlgorithmStateEnum.Idle;
     end
     
     methods (Access = public)
+        %% C'tor:
         function obj = SegmentationAlgoClass(ImagesManager , WindowsManager)
             %SegmentationAlgoClass Construct an instance of this class
             obj.ImagesManager = ImagesManager;
             obj.WindowsManager = WindowsManager;
             obj.Params = default_params();
         end
-        
+        %% Set/Get:
         function [] = set(obj  , Name , Value)
             %set_param set the params that the user chose, and other important values.
             switch Name
@@ -32,19 +33,32 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                     obj.Params.MatlabBuiltIn.ContractionBias = Value;
                 case "SmoothFactor"
                     obj.Params.MatlabBuiltIn.SmoothFactor = Value;
+                case "IterationsPerFrame"
+                    obj.Params.MatlabBuiltIn.IterationsPerFrame = Value;
+                    
                 otherwise
                         error("Unkown Name");
             end %Switch
         
         end
+        %% Control:
         function [  ] = start_or_stop_algorithm(obj)
-            if obj.is_inProgress
-                % Stop"
-                obj.stop_algorithm();
-            else
-                % Start:
-                obj.start_algorithm();
-            end
+            switch obj.State
+                case AlgorithmStateEnum.Idle
+                    % Start"
+                    obj.start_algorithm();
+                    
+                case AlgorithmStateEnum.InProgress
+                    % User Asked to stop. Just update the new state.
+                    obj.State = AlgorithmStateEnum.UserAskedToStop;
+                    
+                case AlgorithmStateEnum.UserAskedToStop
+                    % Stop:
+                    obj.stop_algorithm();
+                    
+                otherwise
+                    error("Not a legit State");
+            end % Switch
         end % start_or_stop_algorithm(obj)
         function [] = start_algorithm(obj)
             %check if we're ready:
@@ -54,7 +68,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                 return
             end
             %update:
-            obj.is_inProgress = true;
+            obj.State = AlgorithmStateEnum.InProgress;
             obj.WindowsManager.set_algoInProgress(  "on" );
             %go:
             switch obj.Params.General.ChosenAlgorithm
@@ -70,10 +84,12 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             obj.stop_algorithm();
         end % start_algorithm 
         function  [] = stop_algorithm(obj)
-            %update:
-            obj.is_inProgress = false;
+            % Are we stopping, or just asking to stop:
+            disp("Stopping Algorithm");
+            obj.State = AlgorithmStateEnum.Idle;
             obj.WindowsManager.set_algoInProgress(  "off" );
         end % stop_algorithm
+        %% Masks:
         function [] = add_mask(obj , Mask)
             obj.Masks_cell{end+1} = Mask;
         end
@@ -82,47 +98,92 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         end
     end % methods (Access = public)
     
+    %%  Segmentation Algorithms:
     methods (Access = protected)
         function [] = start_MatlabBuiltIn(obj)
-            %obj.stop_algorithm(); %not needed
+            
+            % Reset ProgressBar:
+            obj.WindowsManager.update_progress_bar( 0 );
+            
+            %parse Parameters:
+            MaxIterationNum   = obj.Params.MatlabBuiltIn.MaxNumIteration;
+            IterationsPerFrame  = obj.Params.MatlabBuiltIn.IterationsPerFrame;
+            Im                              = obj.ImagesManager.GreyImage;
+            Method                      = Method2MatlabString( obj.Params.MatlabBuiltIn.Method );
+            SmoothFactor           = obj.Params.MatlabBuiltIn.SmoothFactor;
+            ContractionBias        = obj.Params.MatlabBuiltIn.ContractionBias;
+            
+            % Iterate many times:
+            for frameIndex = 1 : MaxIterationNum/IterationsPerFrame
+                
+                % Create a mask that is the results of all the masks in the current frame:
+                NewMask2Show     = zeros( size( obj.ImagesManager.GreyImage  ) );
+                
+                %Go over all masks:
+                for maskIndex = 1 : length( obj.Masks_cell )
+                    
+                    % Active Contours on this mask:
+                    MaskIn = obj.Masks_cell{maskIndex};
+                    MaskOut = activecontour(Im , MaskIn , IterationsPerFrame , Method , ...
+                        'SmoothFactor' , SmoothFactor,...
+                        'ContractionBias' , ContractionBias ...
+                        );
+                    % if masks is empty now, delete it and ignore it for next times
+                    if any( MaskOut , 'all') % if it's not empty
+                        obj.Masks_cell{maskIndex} = MaskOut;
+                    else % if empty
+%                         delete( obj.Masks_cell{maskIndex} )
+                        obj.Masks_cell(maskIndex) = [];
+                        disp("Deleted mask at index " + num2str( maskIndex ) );
+                        break % Go back to before we've calculated    length( obj.Masks_cell )
+                    end
+                    % Update the next mask to show:
+                    NewMask2Show = NewMask2Show  |  MaskOut;
+    
+                end % maskIndex
+                
+                % Print Progress:
+                iterations_text = sprintf('Frame %04d / %d', frameIndex , MaxIterationNum/IterationsPerFrame) ;
+                disp( iterations_text );
+                    
+                if  obj.State == AlgorithmStateEnum.UserAskedToStop
+                    % If user asked to stop -  Terminate:
+                    break
+                else
+                    % ProgressBar
+                    val  =  frameIndex*IterationsPerFrame  / MaxIterationNum;
+                    obj.WindowsManager.update_progress_bar( val );
+                end
+                
+                %refresh all masks in image:
+                obj.ImagesManager.mask_over_image(  NewMask2Show , "FromScratch");
+                
+            end % for frameIndex
         end % start_MatlabBuiltIn
         function [] = start_Lankton(obj)
-            %obj.stop_algorithm(); %not needed
+      
         end % start_MatlabBuiltIn
         function [] = start_Watershed(obj)
             [newMask ] = WaterShed(obj.ImagesManager.GreyImage , obj.Masks_cell , obj.Params.WaterShed);
             obj.ImagesManager.mask_over_image( newMask  , "FromScratch" );
-            %obj.stop_algorithm(); %not needed
+ 
         end % start_Watershed
     end %  (Access = protected)
     
 end % class
 
-%{
-for i = 1 : MaxIterationNum/NumIterationsPerPlot
-    
-    MaskOut = activecontour(Section , MaskIn , NumIterationsPerPlot , AlgoParams.Method , ...
-        'SmoothFactor' , AlgoParams.SmoothFactor ,...
-        'ContractionBias' , AlgoParams.ContractionBias);
-    maskHandle.CData =  add_mask( Section ,MaskOut , rgb) ;
-    MaskIn = MaskOut;
-    
-    %update plot:
-    if Control.is_animate
-        iterationsText  =  sprintf('Iteration %04d / %d', i , MaxIterationNum) ;
-        Graphics.text.String = iterationsText;
-        drawnow
-        
-        %progress bar
-        if Control.is_progress_bar && Graphics.progressbar_bar.CancelRequested
-            Graphics.progressbar_bar.close();
-            delete(Graphics.progressbar_fig);
-            break
-        else
-            val  =  i*NumIterationsPerPlot  / MaxIterationNum;
-            Graphics.progressbar_bar.Value = val;
-        end
+
+
+
+function MatlabMethodString =  Method2MatlabString(GivenMethodString)
+
+    switch GivenMethodString
+        case "Region"
+            MatlabMethodString = "Chan-Vese";
+        case "Edge"
+            MatlabMethodString = "edge";
+        otherwise
+            error("Not a known Method");
     end
-    
-end
-%}
+
+end % Method2MatlabString

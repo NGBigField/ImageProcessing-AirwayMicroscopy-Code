@@ -62,6 +62,9 @@ classdef WindowsManagerClass  < handle
             end % switch
             obj.MainApp.set_algoInProgress(on_off_str)
         end % set_algoInProgress( on_off_str )
+        function [] = update_progress_bar(obj , progressValue)
+            obj.MainApp.EmbeddedProgressBar.update( progressValue );
+        end % update_progress_bar
     end % methods (Access = public)
     
 end % classdef
