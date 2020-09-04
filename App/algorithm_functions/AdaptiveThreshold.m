@@ -32,10 +32,7 @@ bw_mask=imcomplement(bw_mask);
 bw_mask = imclose(bw_mask,se);
 bw_mask = ~bw_mask;
 
-% find solidities and centroids of every object in the mask
-stats = regionprops(bw_mask,'Solidity');
-Solidities = stats.Solidity;
-
+% filter the mask by solidities
 bw_mask = bwpropfilt(bw_mask, 'Solidity', [lower_thresh, upper_thresh]);
 
 end
