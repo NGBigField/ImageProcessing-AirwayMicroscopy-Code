@@ -3,9 +3,9 @@ classdef WindowsManagerClass  < handle
  
     properties
         MainApp
-        ImagesControl
-        ImageWindow
-        has_ImageWindow = false;
+        ImagesControl  % class to control images
+        ImageWindow  % second app
+        has_ImageWindow = false; %flag
     end
     
     methods (Access = public)
@@ -48,6 +48,7 @@ classdef WindowsManagerClass  < handle
                 case "imagewindow"
                     delete(obj.ImageWindow)  
                     obj.has_ImageWindow = false;
+                    obj.ImagesControl.show_image();
                 otherwise
                         error('Wrong windiw_name_str string ');
             end % switch
@@ -62,6 +63,9 @@ classdef WindowsManagerClass  < handle
             end % switch
             obj.MainApp.set_algoInProgress(on_off_str)
         end % set_algoInProgress( on_off_str )
+        function [] = update_progress_bar(obj , progressValue)
+            obj.MainApp.EmbeddedProgressBar.update( progressValue );
+        end % update_progress_bar
     end % methods (Access = public)
     
 end % classdef
