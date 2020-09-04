@@ -1,4 +1,4 @@
-function [centroids, bw] = AdaptiveThreshold(IM,ws,C,tm,se)
+function bw_mask = AdaptiveThreshold(IM,ws,C,tm,se, lower_thresh, upper_thresh)
 %ADAPTIVETHRESHOLD An adaptive thresholding algorithm that seperates the
 %foreground from the background with nonuniform illumination.
 %  bw=adaptivethreshold(IM,ws,C) outputs a binary image bw with the local 
@@ -26,26 +26,16 @@ else
     mIM=medfilt2(IM,[ws ws]);
 end
 sIM=mIM-IM-C;
-bw=im2bw(sIM,0);
-bw=imcomplement(bw);
+bw_mask=imbinarize(sIM,0);
+bw_mask=imcomplement(bw_mask);
 
-bw = imclose(bw,se);
-bw = ~bw;
+bw_mask = imclose(bw_mask,se);
+bw_mask = ~bw_mask;
 
 % find solidities and centroids of every object in the mask
-stats = regionprops(bw,'Solidity', 'Centroid');
-all_centroid = stats.Centroid;
+stats = regionprops(bw_mask,'Solidity');
 Solidities = stats.Solidity;
 
-% filter blobs by solidity
-centroids = [];
-L = min(length(all_centroid),length(Solidities));
-for i = 1:L
-    if (Solidities(i) > 0.5)
-        centroids = [centroids, round(all_centroid(i))];
-    end
-end
-
-
+bw_mask = bwpropfilt(bw_mask, 'Solidity', [lower_thresh, upper_thresh]);
 
 end

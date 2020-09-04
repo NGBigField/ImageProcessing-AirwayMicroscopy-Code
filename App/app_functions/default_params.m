@@ -19,6 +19,7 @@ function [Params] = default_params()
     Params.AdaptiveThreshold.MeanOrMedian = 0; %0 = mean, 1 = median
     Params.AdaptiveThreshold.Threshold = 0.03;
     Params.AdaptiveThreshold.SE = strel('disk',3);
-    
+    Params.AdaptiveThreshold.LowerThresh = 0.25;
+    Params.AdaptiveThreshold.UpperThresh = 0.95;
 end
 
