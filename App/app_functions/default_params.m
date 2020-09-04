@@ -10,7 +10,6 @@ function [Params] = default_params()
     Params.MatlabBuiltIn.ContractionBias      =  0.01;
     Params.MatlabBuiltIn.Method                    =  AvailableAlgorithms.MatlabBuiltInMethods.Edge;
     Params.MatlabBuiltIn.MaxNumIteration  =  1000;
-    Params.MatlabBuiltIn.IterationsPerFrame = 2;
     
     Params.WaterShed = struct();
     Params.WaterShed.Tolerance = 12; % in the range [0 , 255]
