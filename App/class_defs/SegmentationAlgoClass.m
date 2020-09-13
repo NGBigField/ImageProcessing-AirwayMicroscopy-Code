@@ -177,13 +177,13 @@ end % class
 
 function MatlabMethodString =  Method2MatlabString(GivenMethodString)
 
-    switch GivenMethodString
-        case "Region"
+    switch lower(GivenMethodString)
+        case lower("Region")
             MatlabMethodString = "Chan-Vese";
-        case "Edge"
+        case lower("Edge")
             MatlabMethodString = "edge";
         otherwise
-            error("Not a known Method");
+            error("Got: " + GivenMethodString + " .     Not a known Method");
     end
 
 end % Method2MatlabString
