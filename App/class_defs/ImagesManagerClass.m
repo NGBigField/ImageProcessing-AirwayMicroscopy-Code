@@ -52,10 +52,6 @@ classdef ImagesManagerClass < handle
             obj.update_images_from_OriginalImage();
             obj.show_image();
         end
-        function [] = show_histeq_image(obj)
-            obj.Image2Show = histeq(obj.GreyImage);
-            obj.show_image();
-        end
         
         %% Windows and Visuals:
         function [] = show_image(obj)
