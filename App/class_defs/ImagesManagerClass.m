@@ -7,6 +7,7 @@ classdef ImagesManagerClass < handle
         WindowsManager % Manges and controls all open apps and windows
         %images:
         OriginalImage
+        ColoredImage2Use
         GreyImage
         Image2Show  
         %params:
@@ -55,14 +56,14 @@ classdef ImagesManagerClass < handle
         end
         %% Image Manipulations:
         function [] = crop(obj , roi)
-            NewIm = imcrop(obj.OriginalImage , roi.Position ) ;
+            NewIm = imcrop(obj.ColoredImage2Use , roi.Position ) ;
             obj.set_original_image(NewIm);
         end
         function [] = mask_over_image(obj , Mask  , option )
             if nargin >=3  &&  option == "FromScratch"
-                obj.Image2Show = add_mask_over_image(   obj.OriginalImage  ,  Mask  ,  obj.ApearanceValues.MaskColor );
+                obj.Image2Show = add_mask_over_image(   obj.ColoredImage2Use  ,  Mask  ,  obj.ApearanceValues.MaskColor );
             else
-                obj.Image2Show = add_mask_over_image(   obj.Image2Show    ,  Mask  ,  obj.ApearanceValues.MaskColor );
+                obj.Image2Show = add_mask_over_image(   obj.Image2Show              ,  Mask  ,  obj.ApearanceValues.MaskColor );
             end
             obj.show_image();
         end
@@ -84,20 +85,20 @@ classdef ImagesManagerClass < handle
             % original image ->  original image:
             if obj.Config.Resolution < 100
                 Scaling =  obj.Config.Resolution/100;
-                ColoredImage2Use = imresize(obj.OriginalImage , Scaling);
+                obj.ColoredImage2Use = imresize(obj.OriginalImage , Scaling);
             elseif obj.Config.Resolution < 0 || obj.Config.Resolution  > 100
                 error("Not possible");
             elseif obj.Config.Resolution ==0
-                ColoredImage2Use = imresize(obj.OriginalImage , 0.001);
+                obj.ColoredImage2Use = imresize(obj.OriginalImage , 0.001);
             else
-                ColoredImage2Use = obj.OriginalImage;
+                obj.ColoredImage2Use = obj.OriginalImage;
             end
             
             % original image ->  GrayImage :
-            if ndims( ColoredImage2Use )==3 % if Colored Image:
-                obj.GreyImage = rgb2gray(ColoredImage2Use);
-            elseif ismatrix( ColoredImage2Use )   %If gray Image:
-                obj.GreyImage = ColoredImage2Use;
+            if ndims( obj.ColoredImage2Use )==3 % if Colored Image:
+                obj.GreyImage = rgb2gray(obj.ColoredImage2Use);
+            elseif ismatrix( obj.ColoredImage2Use )   %If gray Image:
+                obj.GreyImage = obj.ColoredImage2Use;
             else
                 error("Wrong number image dimensions");
             end
@@ -110,7 +111,7 @@ classdef ImagesManagerClass < handle
             %  ? -> Image2Show : 
             switch obj.Config.Image2Show_origin
                 case "OriginalImage"
-                    obj.Image2Show = ColoredImage2Use;
+                    obj.Image2Show = obj.ColoredImage2Use;
                 case "GrayImage"
                     obj.Image2Show = obj.GreyImage;
                 otherwise
