@@ -100,7 +100,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             ShrinkedTotalMask = zeros(size(obj.Masks_cell{1}));
             for i = 1 : length(obj.Masks_cell)
                 obj.Masks_cell{i} = center_of_mask(obj.Masks_cell{i});
-                ShrinkedTotalMask = ShrinkedTotalMask | obj.Masks_cell{i};
+                ShrinkedTotalMask = ShrinkedTotalMask 
             end
         end
     end % methods (Access = public)
@@ -130,7 +130,12 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                 %Go over all masks:
                 for maskIndex = 1 : length( obj.Masks_cell )
                     
-                    MaskIn = obj.Masks_cell{maskIndex};
+                    
+                    if frameIndex == 1
+                        [MaskIn ,~] = center_of_mask(obj.Masks_cell{maskIndex});
+                    else
+                        MaskIn = obj.Masks_cell{maskIndex};
+                    end                    
                     % Active Contours on this mask:
                     MaskOut = activecontour(Im , MaskIn , IterationsPerFrame , Method , ...
                         'SmoothFactor' , SmoothFactor,...

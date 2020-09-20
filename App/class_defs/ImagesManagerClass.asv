@@ -13,7 +13,7 @@ classdef ImagesManagerClass < handle
         ApearanceValues
         Config = struct("histeq_image"            ,  "off"   ,...
                                  "Image2Show_origin" , "OriginalImage" , ...
-                                 "Resolution"                 , 100 );
+                                 "Resolution"                 , "High");
     end
     
     methods (Access = public)
@@ -86,11 +86,7 @@ classdef ImagesManagerClass < handle
                 Scaling =  obj.Config.Resolution/100;
                 ColoredImage2Use = imresize(obj.OriginalImage , Scaling);
             elseif obj.Config.Resolution < 0 || obj.Config.Resolution  > 100
-                error("Not possible");
-            elseif obj.Config.Resolution ==0
-                ColoredImage2Use = imresize(obj.OriginalImage , 0.001);
-            else
-                ColoredImage2Use = obj.OriginalImage;
+                
             end
             
             % original image ->  GrayImage :
