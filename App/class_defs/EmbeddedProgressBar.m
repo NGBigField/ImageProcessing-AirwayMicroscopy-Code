@@ -33,11 +33,15 @@ classdef EmbeddedProgressBar
             
             % Create empty patch that will be updated
             obj.Patch = patch(Ax,[0 0 0 0],[0 0 1 1],obj.ProgressColor); %greenyellow
+            obj.Patch.LineStyle ='none';
             
             % Create the percent-complete text that will be updated
             obj.Text= app.ProgressBarText;
             obj.Text.Text ="";
             
+            % Popup toolbar behaviour:
+            Toolbar = obj.Patch.Parent.Toolbar;
+            Toolbar.Visible = 'off' ;
         end
         
         function [] = update(obj,value)
