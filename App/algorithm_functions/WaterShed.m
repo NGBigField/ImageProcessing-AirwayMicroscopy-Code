@@ -17,10 +17,11 @@ for i = 1 : length(Masks_cell)
     if any( size(Mask) ~=  size(GrayIm) )
         error("Mask and Image are not of the same dimensions");
     end
+
     
     % Find center of mass:
-    stats = regionprops(Mask , 'Centroid');
-    centroid = round( stats.Centroid );
+    [~ ,centroid ] = center_of_mask(Masks );
+    
     
     % Flood fill
     addedRegion = grayconnected(GrayIm, centroid(2), centroid(1), tolerance) ;

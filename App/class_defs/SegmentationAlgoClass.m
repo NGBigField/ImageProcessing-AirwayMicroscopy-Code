@@ -102,6 +102,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
     methods (Access = protected)
         function [] = start_MatlabBuiltIn(obj)
             
+            
             % Reset ProgressBar:
             obj.WindowsManager.update_progress_bar( 0 );
             
@@ -122,8 +123,13 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                 %Go over all masks:
                 for maskIndex = 1 : length( obj.Masks_cell )
                     
+                    
+                    if frameIndex == 1
+                        [MaskIn ,~] = center_of_mask(obj.Masks_cell{maskIndex});
+                    else
+                        MaskIn = obj.Masks_cell{maskIndex};
+                    end                    
                     % Active Contours on this mask:
-                    MaskIn = obj.Masks_cell{maskIndex};
                     MaskOut = activecontour(Im , MaskIn , IterationsPerFrame , Method , ...
                         'SmoothFactor' , SmoothFactor,...
                         'ContractionBias' , ContractionBias ...

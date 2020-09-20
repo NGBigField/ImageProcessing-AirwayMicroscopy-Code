@@ -11,6 +11,8 @@ classdef ImagesManagerClass < handle
         Image2Show  
         %params:
         ApearanceValues
+        Config = struct("histeq_image"            ,  "off"   ,...
+                                 "Image2Show_origin" , "OriginalImage" );
     end
     
     methods (Access = public)
@@ -35,6 +37,20 @@ classdef ImagesManagerClass < handle
         function [image2show] = get_image2show(obj)
             image2show = obj.get_image2show;
         end
+        function [] = set( obj , kwargs)
+            arguments 
+                obj
+                kwargs.histeq_image 
+                kwargs.Image2Show_origin  %OriginalImage /GrayImage
+            end % arguments
+            InputFields  = fields(kwargs);
+            
+            obj.Config.(InputFields{1}) = kwargs.(InputFields{1});
+
+            % act according to config:
+            obj.update_images_from_OriginalImage();
+            obj.show_image()            
+        end
         %% Image Manipulations:
         function [] = crop(obj , roi)
             NewIm = imcrop(obj.OriginalImage , roi.Position ) ;
@@ -52,10 +68,6 @@ classdef ImagesManagerClass < handle
             obj.update_images_from_OriginalImage();
             obj.show_image();
         end
-        function [] = show_histeq_image(obj)
-            obj.Image2Show = histeq(obj.GreyImage);
-            obj.show_image();
-        end
         
         
         %% Windows and Visuals:
@@ -66,6 +78,7 @@ classdef ImagesManagerClass < handle
     
     methods (Access = protected)
         function [] = update_images_from_OriginalImage(obj)
+            % original image ->  GrayImage :
             if ndims( obj.OriginalImage )==3 % if Colored Image:
                 obj.GreyImage = rgb2gray(obj.OriginalImage);
             elseif ismatrix( obj.OriginalImage )   %If gray Image:
@@ -73,7 +86,22 @@ classdef ImagesManagerClass < handle
             else
                 error("Wrong number image dimensions");
             end
-            obj.Image2Show = obj.OriginalImage;
+            
+            % GrayImage -> GrayImage :
+            if  OnOff2Logical( obj.Config.histeq_image)
+                obj.GreyImage  = histeq( obj.GreyImage );
+            end
+            
+            %  ? -> Image2Show : 
+            switch obj.Config.Image2Show_origin
+                case "OriginalImage"
+                    obj.Image2Show = obj.OriginalImage;
+                case "GrayImage"
+                    obj.Image2Show = obj.GreyImage;
+                otherwise
+                    error("Illegit input Argument");
+            end
+            
         end
     end % methods (Access = protected)
 end
