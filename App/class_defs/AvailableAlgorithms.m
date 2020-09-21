@@ -5,6 +5,8 @@ classdef AvailableAlgorithms
         MatlabBuiltIn 
         Lankton 
         Watershed
+        
+        AdaptiveThreshold
     end
     
     methods (Static)

@@ -25,8 +25,10 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         function [] = set(obj  , Name , Value)
             %set_param set the params that the user chose, and other important values.
             switch Name
+                % General:
                 case "AlgorithmFunction"
                     obj.Params.General.ChosenAlgorithm = Value;
+                 % Snakes: Matlab Built in:
                 case "MatlabFunctionMethod"
                     obj.Params.MatlabBuiltIn.Method = Value;
                 case "ContractionBias"
@@ -35,7 +37,26 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                     obj.Params.MatlabBuiltIn.SmoothFactor = Value;
                 case "IterationsPerFrame"
                     obj.Params.MatlabBuiltIn.IterationsPerFrame = Value;
-                    
+                 % WaterShed:
+                case "WaterShed Tolerance"
+                    obj.Params.WaterShed.Tolerance = Value;
+                 % Adaptive Threshold:
+                case "Adaptive WindowSize"
+                    obj.Params.AdaptiveThreshold.WindowSize = Value;
+                case "Adaptive Threshold"
+                     obj.Params.AdaptiveThreshold.Threshold = Value;
+                case "Adaptive DiskRadius"
+                    obj.Params.AdaptiveThreshold.DistRadius = Value;
+                case "Adaptive SolidityUpperThreshold"
+                    obj.Params.AdaptiveThreshold.SolidityUpperThresh = Value;
+                case "Adaptive SolidityLowerThreshold"
+                    obj.Params.AdaptiveThreshold.SolidityLowerThresh = Value;
+                case "Adaptive MedianOrMean"
+                    if Value ~= 0 && Value ~= 1 
+                        error("Wrong Input");
+                    end
+                    obj.Params.AdaptiveThreshold.MeanOrMedian = Value;
+                        
                 otherwise
                         error("Unkown Name");
             end %Switch
@@ -120,6 +141,32 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             % Show:
             obj.WindowsManager.update_mask_cover_percentage(maskPercentage);
         end
+        function mask_index =  find_mask(obj , location)
+            location = round(location);
+            y_pointer = location(1);
+            x_pointer = location(2);
+            for i = 1 : length(obj.Masks_cell)
+                Mask = obj.Masks_cell{i};
+                [x_mask,y_mask] = find(Mask==1);
+                if any(x_pointer == x_mask & y_pointer == y_mask )
+                    mask_index = i;
+                    return
+                end
+            end
+            %we got here, we found nothing:
+            mask_index = [];
+            
+        end
+        function [] =  remove_mask(obj , mask_index)
+            obj.Masks_cell(mask_index) = [];
+        end
+        function [] = replot_all_masks(obj)
+            TotalMask = zeros(size(obj.Masks_cell{1}));
+            for i = 1 : length(obj.Masks_cell)
+                TotalMask = TotalMask | obj.Masks_cell{i};
+            end
+            obj.ImagesManager.mask_over_image(TotalMask , "FromScratch");
+        end
     end % methods (Access = public)
     
     %%  Segmentation Algorithms:
@@ -198,8 +245,6 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
     end %  (Access = protected)
     
 end % class
-
-
 
 
 function MatlabMethodString =  Method2MatlabString(GivenMethodString)

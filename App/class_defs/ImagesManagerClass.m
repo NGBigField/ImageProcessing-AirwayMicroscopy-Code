@@ -5,11 +5,13 @@ classdef ImagesManagerClass < handle
     properties
         %control:
         WindowsManager % Manges and controls all open apps and windows
+        
         %images:
         OriginalImage
-        ColoredImage2Use
-        GreyImage
+        ColoredImage_Processed
+        GreyImage_Processed        
         Image2Show  
+        
         %params:
         ApearanceValues
         Config = struct("histeq_image"            ,  "off"   ,...
@@ -85,20 +87,20 @@ classdef ImagesManagerClass < handle
             % original image ->  original image:
             if obj.Config.Resolution < 100
                 Scaling =  obj.Config.Resolution/100;
-                obj.ColoredImage2Use = imresize(obj.OriginalImage , Scaling);
+                obj.ColoredImage_Processed = imresize(obj.OriginalImage , Scaling);
             elseif obj.Config.Resolution < 0 || obj.Config.Resolution  > 100
                 error("Not possible");
             elseif obj.Config.Resolution ==0
-                obj.ColoredImage2Use = imresize(obj.OriginalImage , 0.001);
+                obj.ColoredImage_Processed = imresize(obj.OriginalImage , 0.001);
             else
-                obj.ColoredImage2Use = obj.OriginalImage;
+                obj.ColoredImage_Processed = obj.OriginalImage;
             end
             
             % original image ->  GrayImage :
-            if ndims( obj.ColoredImage2Use )==3 % if Colored Image:
-                obj.GreyImage = rgb2gray(obj.ColoredImage2Use);
-            elseif ismatrix( obj.ColoredImage2Use )   %If gray Image:
-                obj.GreyImage = obj.ColoredImage2Use;
+            if ndims( obj.ColoredImage_Processed )==3 % if Colored Image:
+                obj.GreyImage_Processed = rgb2gray(obj.ColoredImage_Processed);
+            elseif ismatrix( obj.ColoredImage_Processed )   %If gray Image:
+                obj.GreyImage_Processed = obj.ColoredImage_Processed;
             else
                 error("Wrong number image dimensions");
             end
@@ -111,7 +113,7 @@ classdef ImagesManagerClass < handle
             %  ? -> Image2Show : 
             switch obj.Config.Image2Show_origin
                 case "OriginalImage"
-                    obj.Image2Show = obj.ColoredImage2Use;
+                    obj.Image2Show = obj.ColoredImage_Processed;
                 case "GrayImage"
                     obj.Image2Show = obj.GreyImage;
                 otherwise
