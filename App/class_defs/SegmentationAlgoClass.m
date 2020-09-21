@@ -82,6 +82,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                         error("Unkown AlgorithmFunction");
             end%switch
             obj.stop_algorithm();
+            obj.calc_and_show_mask_cover_percentage();
         end % start_algorithm 
         function  [] = stop_algorithm(obj)
             % Are we stopping, or just asking to stop:
@@ -102,6 +103,22 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                 obj.Masks_cell{i} = center_of_mask(obj.Masks_cell{i});
                 ShrinkedTotalMask = ShrinkedTotalMask | obj.Masks_cell{i};
             end
+        end
+        function maskPercentage = calc_and_show_mask_cover_percentage(obj )
+            % Calc Mask Cover:
+            TotalMask = zeros(size(obj.Masks_cell{1}));
+            for i = 1 : length(obj.Masks_cell)
+                obj.Masks_cell{i} = center_of_mask(obj.Masks_cell{i});
+                TotalMask = TotalMask | obj.Masks_cell{i};
+            end
+            maskCover = sum(TotalMask ,'all');
+            % Calc Image Totall Cover
+            imageSize = size(obj.ImagesManager.ColoredImage2Use);
+            imageCover = imageSize(1)*imageSize(2);
+            % Calc Percentage:
+            maskPercentage = 100*maskCover/imageCover;
+            % Show:
+            obj.WindowsManager.update_mask_cover_percentage(maskPercentage);
         end
     end % methods (Access = public)
     
@@ -140,7 +157,6 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                     if any( MaskOut , 'all') % if it's not empty
                         obj.Masks_cell{maskIndex} = MaskOut;
                     else % if empty
-%                         delete( obj.Masks_cell{maskIndex} )
                         obj.Masks_cell(maskIndex) = [];
                         disp("Deleted mask at index " + num2str( maskIndex ) );
                         break % Go back to before we've calculated    length( obj.Masks_cell )
@@ -166,15 +182,18 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                 %refresh all masks in image:
                 obj.ImagesManager.mask_over_image(  NewMask2Show , "FromScratch");
                 
+                % Update Mask Cover Percentage:
+                [~] = obj.calc_and_show_mask_cover_percentage();
+                
             end % for frameIndex
         end % start_MatlabBuiltIn
         function [] = start_Lankton(obj)
       
         end % start_MatlabBuiltIn
         function [] = start_Watershed(obj)
-            [newMask ] = WaterShed(obj.ImagesManager.GreyImage , obj.Masks_cell , obj.Params.WaterShed);
-            obj.ImagesManager.mask_over_image( newMask  , "FromScratch" );
- 
+            [newTotalMask ] = WaterShed(obj.ImagesManager.GreyImage , obj.Masks_cell , obj.Params.WaterShed);
+            obj.ImagesManager.mask_over_image( newTotalMask  , "FromScratch" );
+            obj.Masks_cell = seperate_mask(newTotalMask);
         end % start_Watershed
     end %  (Access = protected)
     

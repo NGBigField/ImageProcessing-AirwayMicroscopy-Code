@@ -1,5 +1,8 @@
-function [ BW ] = WaterShed(GrayIm , Masks_cell , Params)
+function [ NewOverallMask ] = WaterShed(GrayIm , Masks_cell , Params)
 %WATERSHED Flood-Fill image
+% Our Watershed Function
+%
+% By: Nir Gutman and Tomer Arama
 
 %Params:
 tolerance = Params.Tolerance;
@@ -8,7 +11,7 @@ tolerance = Params.Tolerance;
 GrayIm = imadjust(GrayIm);
 
 % Create empty mask.
-BW = false(size(GrayIm,1),size(GrayIm,2));
+NewOverallMask = false(size(GrayIm,1),size(GrayIm,2));
 
 for i = 1 : length(Masks_cell)
     Mask = Masks_cell{i};
@@ -20,12 +23,12 @@ for i = 1 : length(Masks_cell)
 
     
     % Find center of mass:
-    [~ ,centroid ] = center_of_mask(Masks );
+    [~ ,centroid ] = center_of_mask( Mask );
     
     
     % Flood fill
     addedRegion = grayconnected(GrayIm, centroid(2), centroid(1), tolerance) ;
-    BW = BW | addedRegion;
+    NewOverallMask = NewOverallMask | addedRegion;
 end
 
 % Create masked image.

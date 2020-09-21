@@ -65,6 +65,9 @@ classdef WindowsManagerClass  < handle
         function [] = update_progress_bar(obj , progressValue)
             obj.MainApp.EmbeddedProgressBar.update( progressValue );
         end % update_progress_bar
+        function [] = update_mask_cover_percentage(obj , percentageValue)
+            obj.MainApp.MaskCoverPercentageEditField.Value = percentageValue;
+        end % function update_mask_cover_percentage()
     end % methods (Access = public)
     
 end % classdef

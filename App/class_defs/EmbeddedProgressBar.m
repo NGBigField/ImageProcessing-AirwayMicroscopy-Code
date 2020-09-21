@@ -51,7 +51,7 @@ classdef EmbeddedProgressBar
                 % update patch size and percentage text
                 obj.Patch.XData = [0 value value 0];
                 obj.Text.Text = sprintf('%.0f%%',round(value*100));
-                drawnow %update graphics
+                drawnow limitrate %update graphics
         end
     end
 end
