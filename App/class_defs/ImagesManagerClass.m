@@ -4,7 +4,12 @@ classdef ImagesManagerClass < handle
     
     properties
         %control:
+        SegmentAlgo 
         WindowsManager % Manges and controls all open apps and windows
+        Config = struct( "histeq_image"            ,  "off"    ,...
+                         "Image2Show_color"        , "Colored" , ...  % "Colored"/"Gray"
+                         "Resolution"              , 100 );
+        
         
         %images:
         OriginalImage
@@ -14,9 +19,8 @@ classdef ImagesManagerClass < handle
         
         %params:
         ApearanceValues
-        Config = struct("histeq_image"            ,  "off"   ,...
-                                 "Image2Show_origin" , "OriginalImage" , ...
-                                 "Resolution"                 , 100 );
+        
+
     end
     
     methods (Access = public)
@@ -41,20 +45,43 @@ classdef ImagesManagerClass < handle
         function [image2show] = get_image2show(obj)
             image2show = obj.get_image2show;
         end
-        function [] = set( obj , kwargs)
+        function [image2show_origin] = get_Image2Show_Origin(obj)
+            if     obj.Config.Image2Show_color == "Colored"
+                image2show_origin = obj.ColoredImage_Processed;
+            elseif obj.Config.Image2Show_color == "Gray"
+                image2show_origin = obj.GreyImage_Processed;
+            else 
+                error("Unknown color style for Image2Show")
+            end
+        end
+        function [] = set( obj , kwargs )
             arguments 
                 obj
                 kwargs.histeq_image 
-                kwargs.Image2Show_origin  %OriginalImage /GrayImage
+                kwargs.Image2Show_color  %OriginalImage /GrayImage
                 kwargs.Resolution 
             end % arguments
             InputFields  = fields(kwargs);
-            
             obj.Config.(InputFields{1}) = kwargs.(InputFields{1});
 
-            % act according to config:
-            obj.update_images_from_OriginalImage();
-            obj.show_image()            
+        end
+        function [Res] = get(obj , requestStr)
+            switch lower(string(requestStr))
+                case lower("GrayImage")
+                    Res = obj.GreyImage_Processed;
+                case lower("GreyImage")
+                    Res = obj.get("GrayImage");
+                case lower("ColoredImage")
+                    Res = obj.ColoredImage_Processed;                    
+                case lower("PlottedImage")
+                    Res = obj.Image2Show;
+                case lower("Image2Show")
+                    Res = obj.get("PlottedImage");
+                case lower("Image2Show_Origin")
+                    Res = obj.get_Image2Show_Origin();
+                otherwise
+                    error("Unknown request string for method get() ");
+            end
         end
         %% Image Manipulations:
         function [] = crop(obj , roi)
@@ -63,9 +90,9 @@ classdef ImagesManagerClass < handle
         end
         function [] = mask_over_image(obj , Mask  , option )
             if nargin >=3  &&  option == "FromScratch"
-                obj.Image2Show = add_mask_over_image(   obj.ColoredImage2Use  ,  Mask  ,  obj.ApearanceValues.MaskColor );
+                obj.Image2Show = add_mask_over_image(   obj.get("Image2Show_Origin") ,  Mask  ,  obj.ApearanceValues.MaskColor );
             else
-                obj.Image2Show = add_mask_over_image(   obj.Image2Show              ,  Mask  ,  obj.ApearanceValues.MaskColor );
+                obj.Image2Show = add_mask_over_image(   obj.get("Image2Show")        ,  Mask  ,  obj.ApearanceValues.MaskColor );
             end
             obj.show_image();
         end
@@ -79,12 +106,14 @@ classdef ImagesManagerClass < handle
         function [] = show_image(obj)
             obj.WindowsManager.show_image(obj.Image2Show);
         end
-    end % methods (Access = public)
-    
-    methods (Access = protected)
+        
+%     end % methods (Access = public)
+%     
+%     methods (Access = protected)
+
         function [] = update_images_from_OriginalImage(obj)
             
-            % original image ->  original image:
+            % original image ->  ColoredImage_Processed:
             if obj.Config.Resolution < 100
                 Scaling =  obj.Config.Resolution/100;
                 obj.ColoredImage_Processed = imresize(obj.OriginalImage , Scaling);
@@ -92,8 +121,10 @@ classdef ImagesManagerClass < handle
                 error("Not possible");
             elseif obj.Config.Resolution ==0
                 obj.ColoredImage_Processed = imresize(obj.OriginalImage , 0.001);
-            else
+            elseif obj.Config.Resolution == 100
                 obj.ColoredImage_Processed = obj.OriginalImage;
+            else
+                error("What other option do we got? ");
             end
             
             % original image ->  GrayImage :
@@ -107,18 +138,14 @@ classdef ImagesManagerClass < handle
             
             % GrayImage -> GrayImage :
             if  OnOff2Logical( obj.Config.histeq_image)
-                obj.GreyImage  = histeq( obj.GreyImage );
+                obj.GreyImage_Processed  = histeq( obj.GreyImage_Processed );
             end
             
             %  ? -> Image2Show : 
-            switch obj.Config.Image2Show_origin
-                case "OriginalImage"
-                    obj.Image2Show = obj.ColoredImage_Processed;
-                case "GrayImage"
-                    obj.Image2Show = obj.GreyImage;
-                otherwise
-                    error("Illegit input Argument");
-            end
+            obj.Image2Show = obj.get("Image2Show_Origin");
+            
+            % Add mask if exists:
+            obj.SegmentAlgo.replot_all_masks();
             
         end
     end % methods (Access = protected)

@@ -4,11 +4,11 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
     %   Will run the algorithm when the user chooses to do so.
     
     properties
-        Params= default_params();
+        Params = default_params();
 
         Masks_cell = {}  % the thing that we're looking for.
         ImagesManager % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
-        WindowsManager ; % Manges and controls all open apps and windows
+        WindowsManager ; % Manges and controls all open apps and windows 
         
         State  = AlgorithmStateEnum.Idle;
     end
@@ -27,7 +27,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             switch Name
                 % General:
                 case "AlgorithmFunction"
-                    obj.Params.General.ChosenAlgorithm = Value;
+                    obj.Params.General.ChosenAlgorithm = ChosenMethodEnumFromString( Value );
                  % Snakes: Matlab Built in:
                 case "MatlabFunctionMethod"
                     obj.Params.MatlabBuiltIn.Method = Value;
@@ -83,7 +83,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         end % start_or_stop_algorithm(obj)
         function [] = start_algorithm(obj)
             %check if we're ready:
-            if isempty( obj.Masks_cell )
+            if isempty( obj.Masks_cell ) && (obj.Params.General.ChosenAlgorithm ~= AvailableAlgorithms.AdaptiveThreshold)
                 warning("Choose Region Of Interest 'ROI'  before starting algorithm");
                 obj.stop_algorithm();
                 return
@@ -93,6 +93,8 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             obj.WindowsManager.set_algoInProgress(  "on" );
             %go:
             switch obj.Params.General.ChosenAlgorithm
+                case AvailableAlgorithms.AdaptiveThreshold
+                    obj.start_AdaptiveThreshold();
                 case AvailableAlgorithms.MatlabBuiltIn
                     obj.start_MatlabBuiltIn();
                 case AvailableAlgorithms.Lankton
@@ -110,6 +112,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             disp("Stopping Algorithm");
             obj.State = AlgorithmStateEnum.Idle;
             obj.WindowsManager.set_algoInProgress(  "off" );
+            obj.WindowsManager.update_progress_bar(0); % reset progress bar;
         end % stop_algorithm
         %% Masks:
         function [] = add_mask(obj , Mask)
@@ -127,14 +130,10 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         end
         function maskPercentage = calc_and_show_mask_cover_percentage(obj )
             % Calc Mask Cover:
-            TotalMask = zeros(size(obj.Masks_cell{1}));
-            for i = 1 : length(obj.Masks_cell)
-                obj.Masks_cell{i} = center_of_mask(obj.Masks_cell{i});
-                TotalMask = TotalMask | obj.Masks_cell{i};
-            end
+            TotalMask = obj.total_mask();
             maskCover = sum(TotalMask ,'all');
             % Calc Image Totall Cover
-            imageSize = size(obj.ImagesManager.ColoredImage2Use);
+            imageSize = size(obj.ImagesManager.get("Image2Show"));
             imageCover = imageSize(1)*imageSize(2);
             % Calc Percentage:
             maskPercentage = 100*maskCover/imageCover;
@@ -160,7 +159,16 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         function [] =  remove_mask(obj , mask_index)
             obj.Masks_cell(mask_index) = [];
         end
+        function [TotalMask] = total_mask(obj)
+            TotalMask = zeros(size(obj.Masks_cell{1}));
+            for i = 1 : length(obj.Masks_cell)
+                TotalMask = TotalMask | obj.Masks_cell{i};
+            end
+        end % total_mask
         function [] = replot_all_masks(obj)
+            if isempty(obj.Masks_cell)
+                return
+            end
             TotalMask = zeros(size(obj.Masks_cell{1}));
             for i = 1 : length(obj.Masks_cell)
                 TotalMask = TotalMask | obj.Masks_cell{i};
@@ -171,6 +179,23 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
     
     %%  Segmentation Algorithms:
     methods (Access = protected)
+        function [] =start_AdaptiveThreshold(obj)
+            
+            im = obj.ImagesManager.get("GrayImage");                        
+            obj.WindowsManager.update_progress_bar(10/100); % Update progressbar:            
+            % find all blobs (mask of everything):
+            TotalMask = AdaptiveThreshold(im, obj.Params.AdaptiveThreshold.WindowSize,          obj.Params.AdaptiveThreshold.Threshold, ...
+                                              obj.Params.AdaptiveThreshold.MeanOrMedian,        obj.Params.AdaptiveThreshold.DistRadius, ...
+                                              obj.Params.AdaptiveThreshold.SolidityLowerThresh, obj.Params.AdaptiveThreshold.SolidityUpperThresh);           
+            obj.WindowsManager.update_progress_bar(20/100); % Update progressbar:            
+            % split the mask into seperate mask for each blob:
+            obj.Masks_cell = seperate_mask(TotalMask);
+            obj.WindowsManager.update_progress_bar(50/100); % Update progressbar:              
+            % Update image in window
+            obj.replot_all_masks();
+            obj.WindowsManager.update_progress_bar(100/100); % Update progressbar:        
+            
+        end % start_AdaptiveThreshold
         function [] = start_MatlabBuiltIn(obj)
             
             
@@ -246,6 +271,20 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
     
 end % class
 
+function [Method] = ChosenMethodEnumFromString(String)
+    switch string(String)
+        case "Adaptive Threshold"
+            Method = AvailableAlgorithms.AdaptiveThreshold;            
+        case "MATLAB's Snakes"
+            Method = AvailableAlgorithms.MatlabBuiltIn;
+        case "Lankton's Snakes"
+            Method = AvailableAlgorithms.Lankton;
+        case "Watershed"
+            Method = AvailableAlgorithms.Watershed;
+        otherwise
+            error("Unkown String");
+    end
+end % ChosenMethodEnumFromString
 
 function MatlabMethodString =  Method2MatlabString(GivenMethodString)
 

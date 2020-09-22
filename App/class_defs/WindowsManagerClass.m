@@ -17,6 +17,23 @@ classdef WindowsManagerClass  < handle
         function [] = set_ImagesControl(obj , ImagesControlHandle)
             obj.ImagesControl = ImagesControlHandle;
         end
+        %% Set/Get:
+        function [] = set(obj , key , value )
+            switch key
+                case "Image2Show_color"
+                    if value == "Colored"
+                        obj.MainApp.ColoredMenu.Checked = "on";
+                        obj.MainApp.GrayMenu.Checked = "off";
+                    elseif value == "Gray"
+                        obj.MainApp.ColoredMenu.Checked = "off";
+                        obj.MainApp.GrayMenu.Checked = "on";
+                    else
+                        error("Unrecognized Color");
+                    end
+                otherwise 
+                    error("Unknown key to set");
+            end % switch
+        end % set
         %% Images Commands:
         function [] = show_image(obj , Im)
             if obj.has_ImageWindow
@@ -63,7 +80,11 @@ classdef WindowsManagerClass  < handle
             obj.MainApp.set_algoInProgress(on_off_str)
         end % set_algoInProgress( on_off_str )
         function [] = update_progress_bar(obj , progressValue)
-            obj.MainApp.EmbeddedProgressBar.update( progressValue );
+            if progressValue>1 || progressValue<0
+                error("Invalid Value for ProgressBar");
+            else
+                obj.MainApp.EmbeddedProgressBar.update( progressValue );
+            end            
         end % update_progress_bar
         function [] = update_mask_cover_percentage(obj , percentageValue)
             obj.MainApp.MaskCoverPercentageEditField.Value = percentageValue;

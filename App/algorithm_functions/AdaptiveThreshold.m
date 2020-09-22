@@ -1,4 +1,4 @@
-function bw_mask = AdaptiveThreshold(IM,ws,C,tm,se, lower_thresh, upper_thresh)
+function bw_mask = AdaptiveThreshold(IM,ws,C,tm,se_length, lower_thresh, upper_thresh)
 %ADAPTIVETHRESHOLD An adaptive thresholding algorithm that seperates the
 %foreground from the background with nonuniform illumination.
 %  bw=adaptivethreshold(IM,ws,C) outputs a binary image bw with the local 
@@ -11,6 +11,8 @@ function bw_mask = AdaptiveThreshold(IM,ws,C,tm,se, lower_thresh, upper_thresh)
 %
 %  For more information, please see
 %  http://homepages.inf.ed.ac.uk/rbf/HIPR2/adpthrsh.htm
+
+se = strel('disk',se_length);
 
 if (nargin<3)
     error('You must provide the image IM, the window size ws, and C.');
