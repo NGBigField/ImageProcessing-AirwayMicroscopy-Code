@@ -160,7 +160,11 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             obj.Masks_cell(mask_index) = [];
         end
         function [TotalMask] = total_mask(obj)
-            TotalMask = zeros(size(obj.Masks_cell{1}));
+            if  isempty(obj.Masks_cell)
+                TotalMask = [];
+               return 
+            end
+            TotalMask = false(size(obj.Masks_cell{1}));
             for i = 1 : length(obj.Masks_cell)
                 TotalMask = TotalMask | obj.Masks_cell{i};
             end

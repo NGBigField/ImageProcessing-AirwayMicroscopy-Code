@@ -6,9 +6,11 @@ classdef ImagesManagerClass < handle
         %control:
         SegmentAlgo 
         WindowsManager % Manges and controls all open apps and windows
-        Config = struct( "histeq_image"            ,  "off"    ,...
+        Config = struct( "histeq_image"            ,  "off"    , ...
                          "Image2Show_color"        , "Colored" , ...  % "Colored"/"Gray"
-                         "Resolution"              , 100 );
+                         "Resolution"              , 100       , ... 
+                         "blurring"                ,  "off"      ...
+                       );
         
         
         %images:
@@ -64,7 +66,8 @@ classdef ImagesManagerClass < handle
                 obj
                 kwargs.histeq_image 
                 kwargs.Image2Show_color  %OriginalImage /GrayImage
-                kwargs.Resolution 
+                kwargs.Resolution
+                kwargs.blurring
             end % arguments
             InputFields  = fields(kwargs);
             obj.Config.(InputFields{1}) = kwargs.(InputFields{1});
@@ -144,6 +147,9 @@ classdef ImagesManagerClass < handle
             % GrayImage -> GrayImage :
             if  OnOff2Logical( obj.Config.histeq_image)
                 obj.GreyImage_Processed  = histeq( obj.GreyImage_Processed );
+            end            
+            if OnOff2Logical( obj.Config.blurring )
+                obj.GreyImage_Processed  = ImageBlur( obj.GreyImage_Processed );
             end
             
             %  ? -> Image2Show : 
