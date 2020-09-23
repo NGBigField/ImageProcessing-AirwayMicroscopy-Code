@@ -203,18 +203,18 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             obj.WindowsManager.update_progress_bar( 0 );
             
             %parse Parameters:
-            MaxIterationNum   = obj.Params.MatlabBuiltIn.MaxNumIteration;
+            MaxIterationNum     = obj.Params.MatlabBuiltIn.MaxNumIteration;
             IterationsPerFrame  = obj.Params.MatlabBuiltIn.IterationsPerFrame;
-            Im                              = obj.ImagesManager.GreyImage;
-            Method                      = Method2MatlabString( obj.Params.MatlabBuiltIn.Method );
-            SmoothFactor           = obj.Params.MatlabBuiltIn.SmoothFactor;
-            ContractionBias        = obj.Params.MatlabBuiltIn.ContractionBias;
+            Im                  = obj.ImagesManager.get("GrayImage");
+            Method              = Method2MatlabString( obj.Params.MatlabBuiltIn.Method );
+            SmoothFactor        = obj.Params.MatlabBuiltIn.SmoothFactor;
+            ContractionBias     = obj.Params.MatlabBuiltIn.ContractionBias;
             
             % Iterate many times:
             for frameIndex = 1 : MaxIterationNum/IterationsPerFrame
                 
                 % Create a mask that is the results of all the masks in the current frame:
-                NewMask2Show     = zeros( size( obj.ImagesManager.GreyImage  ) );
+                NewMask2Show     = zeros( size( Im ) );
                 
                 %Go over all masks:
                 for maskIndex = 1 : length( obj.Masks_cell )
@@ -263,7 +263,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
       
         end % start_MatlabBuiltIn
         function [] = start_Watershed(obj)
-            [newTotalMask ] = WaterShed(obj.ImagesManager.GreyImage , obj.Masks_cell , obj.Params.WaterShed);
+            [newTotalMask ] = WaterShed( obj.ImagesManager.get("GrayImage") , obj.Masks_cell , obj.Params.WaterShed);
             obj.ImagesManager.mask_over_image( newTotalMask  , "FromScratch" );
             obj.Masks_cell = seperate_mask(newTotalMask);
         end % start_Watershed

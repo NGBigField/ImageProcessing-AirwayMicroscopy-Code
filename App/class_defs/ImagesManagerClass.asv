@@ -38,12 +38,8 @@ classdef ImagesManagerClass < handle
         function [] = set_original_image( obj ,originalImage )
             %set_original_image( obj ,originalImage )
             %   First call to make sure that we're updated with user's input
-            
-            % Save image:
             obj.OriginalImage = originalImage ;
-            % Let Segment Algo know that their mask (if exists) is no longer valid:
-            obj.SegmentAlgo.clear_masks();
-            % Go through all the image manipulations:
+            %l
             obj.update_images_from_OriginalImage();
             obj.show_image()
         end

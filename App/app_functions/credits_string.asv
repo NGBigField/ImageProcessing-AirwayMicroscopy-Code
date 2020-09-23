@@ -1,0 +1,26 @@
+function [CreditString] = credits_string()
+    %%
+    clear all; clc;
+    Text = importdata('Credit.txt');
+    Text = Text.textdata;
+
+    TotalString = "";
+    for i = 1 : size(Text,1)
+        for j = 1 : size(Text,2)
+            
+            crntString = string(Text{i,j});
+            if 
+            TotalString = TotalString + crntString;
+            % insert space
+            TotalString = TotalString + " ";
+            
+        end % for j   
+        
+        % insert newline:
+        TotalString = TotalString + newline;
+        
+    end % for i
+    
+    disp(TotalString);
+
+end % credits_string
