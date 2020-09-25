@@ -84,6 +84,8 @@ classdef ImagesManagerClass < handle
         end
         function [Res] = get(obj , requestStr)
             switch lower(string(requestStr))
+                case lower("OriginalImage")
+                    Res = obj.OriginalImage;
                 case lower("GrayImage")
                     Res = obj.GreyImage_Processed;
                 case lower("GreyImage")
@@ -102,7 +104,7 @@ classdef ImagesManagerClass < handle
         end
         %% Image Manipulations:
         function [] = crop(obj , roi)
-            NewIm = imcrop(obj.ColoredImage2Use , roi.Position ) ;
+            NewIm = imcrop(obj.get("OriginalImage") , roi.Position ) ;
             obj.set_original_image(NewIm);
         end
         function [] = mask_over_image(obj , Mask  , option )
@@ -143,6 +145,9 @@ classdef ImagesManagerClass < handle
             else
                 error("What other option do we got? ");
             end
+            
+            % original image ->  ColoredImage_Processed:
+            
             
             % original image ->  GrayImage :
             if ndims( obj.ColoredImage_Processed )==3 % if Colored Image:
