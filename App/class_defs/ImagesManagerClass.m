@@ -9,7 +9,8 @@ classdef ImagesManagerClass < handle
         Config = struct( "histeq_image"            ,  "off"    , ...
                          "Image2Show_color"        , "Colored" , ...  % "Colored"/"Gray"
                          "Resolution"              , 100       , ... 
-                         "blurring"                ,  "off"      ...
+                         "blurring"                ,  "off"    , ...
+                         "blurring_options"        , struct()  ...
                        );
         
         
@@ -64,14 +65,22 @@ classdef ImagesManagerClass < handle
         function [] = set( obj , kwargs )
             arguments 
                 obj
+                % Things we can set:
                 kwargs.histeq_image 
                 kwargs.Image2Show_color  %OriginalImage /GrayImage
                 kwargs.Resolution
                 kwargs.blurring
+                % Extra options
+                kwargs.options
             end % arguments
             InputFields  = fields(kwargs);
-            obj.Config.(InputFields{1}) = kwargs.(InputFields{1});
-
+            InputField = string(InputFields{1});
+            if InputField == "blurring" && (  length(InputFields) >= 2 )
+                obj.Config.(InputField) = kwargs.(InputField);
+                obj.Config.(InputField+"_options") = kwargs.options;
+            else
+                obj.Config.(InputField) = kwargs.(InputField);
+            end
         end
         function [Res] = get(obj , requestStr)
             switch lower(string(requestStr))
@@ -149,7 +158,7 @@ classdef ImagesManagerClass < handle
                 obj.GreyImage_Processed  = histeq( obj.GreyImage_Processed );
             end            
             if OnOff2Logical( obj.Config.blurring )
-                obj.GreyImage_Processed  = ImageBlur( obj.GreyImage_Processed );
+                obj.GreyImage_Processed  = ImageBlur( obj.GreyImage_Processed , obj.Config.blurring_options );
             end
             
             %  ? -> Image2Show : 

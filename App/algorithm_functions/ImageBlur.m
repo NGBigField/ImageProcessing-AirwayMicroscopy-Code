@@ -1,7 +1,7 @@
-function [GrayImageOut] = ImageBlur(GrayImageIn)
+function [GrayImageOut] = ImageBlur(GrayImageIn , options)
 
-    hsize = 15;
-    sigma = 10;
+    hsize = options.WindowSize;
+    sigma = options.Sigma;
 
     gaussianFilter = fspecial('gaussian',hsize,sigma);
     GrayImageOut = imfilter(GrayImageIn, gaussianFilter , "replicate");
