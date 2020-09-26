@@ -43,9 +43,9 @@ function [Params] = default_params( ImageType )
            Params.General.ChosenAlgorithm     =  AvailableAlgorithms.MatlabBuiltIn;
            Params.MatlabBuiltIn.SmoothFactor        =  0.1;
            Params.MatlabBuiltIn.ContractionBias     =  -0.4;
-           Params.MatlabBuiltIn.Method                   =  AvailableAlgorithms.MatlabBuiltInMethods.Region;
-           Params.MatlabBuiltIn.MaxNumIteration   =  200;
-           Params.MatlabBuiltIn.IterationsPerFrame = 2;
+           Params.MatlabBuiltIn.Method              =  AvailableAlgorithms.MatlabBuiltInMethods.Region;
+           Params.MatlabBuiltIn.MaxNumIteration     =  200;
+           Params.MatlabBuiltIn.IterationsPerFrame  =  2;
            
        case "Flask"
            return

@@ -6,9 +6,12 @@ classdef ImagesManagerClass < handle
         %control:
         SegmentAlgo 
         WindowsManager % Manges and controls all open apps and windows
-        Config = struct( "histeq_image"            ,  "off"    ,...
+        Config = struct( "histeq_image"            ,  "off"    , ...
                          "Image2Show_color"        , "Colored" , ...  % "Colored"/"Gray"
-                         "Resolution"              , 100 );
+                         "Resolution"              , 100       , ... 
+                         "blurring"                ,  "off"    , ...
+                         "blurring_options"        , struct()  ...
+                       );
         
         
         %images:
@@ -62,16 +65,27 @@ classdef ImagesManagerClass < handle
         function [] = set( obj , kwargs )
             arguments 
                 obj
+                % Things we can set:
                 kwargs.histeq_image 
                 kwargs.Image2Show_color  %OriginalImage /GrayImage
-                kwargs.Resolution 
+                kwargs.Resolution
+                kwargs.blurring
+                % Extra options
+                kwargs.options
             end % arguments
             InputFields  = fields(kwargs);
-            obj.Config.(InputFields{1}) = kwargs.(InputFields{1});
-
+            InputField = string(InputFields{1});
+            if InputField == "blurring" && (  length(InputFields) >= 2 )
+                obj.Config.(InputField) = kwargs.(InputField);
+                obj.Config.(InputField+"_options") = kwargs.options;
+            else
+                obj.Config.(InputField) = kwargs.(InputField);
+            end
         end
         function [Res] = get(obj , requestStr)
             switch lower(string(requestStr))
+                case lower("OriginalImage")
+                    Res = obj.OriginalImage;
                 case lower("GrayImage")
                     Res = obj.GreyImage_Processed;
                 case lower("GreyImage")
@@ -90,7 +104,7 @@ classdef ImagesManagerClass < handle
         end
         %% Image Manipulations:
         function [] = crop(obj , roi)
-            NewIm = imcrop(obj.ColoredImage2Use , roi.Position ) ;
+            NewIm = imcrop(obj.get("OriginalImage") , roi.Position ) ;
             obj.set_original_image(NewIm);
         end
         function [] = mask_over_image(obj , Mask  , option )
@@ -132,6 +146,9 @@ classdef ImagesManagerClass < handle
                 error("What other option do we got? ");
             end
             
+            % original image ->  ColoredImage_Processed:
+            
+            
             % original image ->  GrayImage :
             if ndims( obj.ColoredImage_Processed )==3 % if Colored Image:
                 obj.GreyImage_Processed = rgb2gray(obj.ColoredImage_Processed);
@@ -144,6 +161,9 @@ classdef ImagesManagerClass < handle
             % GrayImage -> GrayImage :
             if  OnOff2Logical( obj.Config.histeq_image)
                 obj.GreyImage_Processed  = histeq( obj.GreyImage_Processed );
+            end            
+            if OnOff2Logical( obj.Config.blurring )
+                obj.GreyImage_Processed  = ImageBlur( obj.GreyImage_Processed , obj.Config.blurring_options );
             end
             
             %  ? -> Image2Show : 

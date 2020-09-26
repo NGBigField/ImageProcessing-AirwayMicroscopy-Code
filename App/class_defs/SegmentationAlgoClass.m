@@ -44,7 +44,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                 case "Adaptive WindowSize"
                     obj.Params.AdaptiveThreshold.WindowSize = Value;
                 case "Adaptive Threshold"
-                     obj.Params.AdaptiveThreshold.Threshold = Value;
+                    obj.Params.AdaptiveThreshold.Threshold = Value;
                 case "Adaptive DiskRadius"
                     obj.Params.AdaptiveThreshold.DistRadius = Value;
                 case "Adaptive SolidityUpperThreshold"
@@ -58,7 +58,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                     obj.Params.AdaptiveThreshold.MeanOrMedian = Value;
                         
                 otherwise
-                        error("Unkown Name");
+                    error("Unkown Name");
             end %Switch
         
         end
@@ -122,7 +122,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             obj.Masks_cell = {};
         end
         function [ShrinkedTotalMask] = shrink_masks(obj)
-            ShrinkedTotalMask = zeros(size(obj.Masks_cell{1}));
+            ShrinkedTotalMask = false(size(obj.Masks_cell{1}));
             for i = 1 : length(obj.Masks_cell)
                 obj.Masks_cell{i} = center_of_mask(obj.Masks_cell{i});
                 ShrinkedTotalMask = ShrinkedTotalMask | obj.Masks_cell{i};
@@ -160,7 +160,11 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             obj.Masks_cell(mask_index) = [];
         end
         function [TotalMask] = total_mask(obj)
-            TotalMask = zeros(size(obj.Masks_cell{1}));
+            if  isempty(obj.Masks_cell)
+                TotalMask = [];
+               return 
+            end
+            TotalMask = false(size(obj.Masks_cell{1}));
             for i = 1 : length(obj.Masks_cell)
                 TotalMask = TotalMask | obj.Masks_cell{i};
             end
