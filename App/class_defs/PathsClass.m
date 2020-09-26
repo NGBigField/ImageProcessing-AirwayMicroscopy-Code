@@ -5,7 +5,7 @@ classdef  PathsClass
        AllDirectories
        AllPictures
        AvailablePictures
-       
+       ImagesForComparison
    end
     
    methods ( Access = public)
@@ -47,6 +47,9 @@ classdef  PathsClass
            
            % Coating Directory needs some specail attention:
            self.CoatingDirectory = organzie_CoatingDirectory_sub_dirs(self.AllDirectories.SuperDirectory4);
+           
+           % Images for comparison needs a seperate slot:
+           self.ImagesForComparison = organize_ImagesForComparison(self.AllDirectories.SuperDirectory_ImagesForComparison);
            
            %For easy use, seperate all good pictures that can be used.
            self.AvailablePictures = struct(); 
@@ -197,3 +200,17 @@ function  CoatingDirectory = organzie_CoatingDirectory_sub_dirs(CoatingDirPath)
 
 end
 
+
+
+function ImagesForComparison = organize_ImagesForComparison(SuperDirectory_ImagesForComparison)
+
+    % dir(SuperDirectory_ImagesForComparison)
+    
+    ImagesForComparison = struct();
+    ImagesForComparison.Red     = SuperDirectory_ImagesForComparison + filesep + "red.png";
+    ImagesForComparison.Natural = SuperDirectory_ImagesForComparison + filesep + "23_B1_2.tif";
+    ImagesForComparison.Flask   = SuperDirectory_ImagesForComparison + filesep + "flask 5_17.5.20.tif";
+    ImagesForComparison.Coating = SuperDirectory_ImagesForComparison + filesep + "day 7_collagen_D5_2.tif";
+    
+
+end

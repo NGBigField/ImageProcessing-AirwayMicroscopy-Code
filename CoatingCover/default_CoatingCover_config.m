@@ -1,17 +1,34 @@
-function Config = default_CoatingCover_config()
+function Config = default_cell_cover_config(ImageType)
+    arguments
+        ImageType string = "Unkown"
+    end
     
     Config = struct();
     
-    Config.isOpen = false;
-    Config.openRadius = 2;
+    Config.SubstructBackgroundRadius = 2;
+    Config.PercentDarkest = 35;
     
-    Config.isOpenAgain = false;
-    Config.openRadiusAgain = 3;
     
-    Config.isClose = false;
-    Config.closeRadius = 4;
+    Config.openRadius = 2;  % set to 0  to not-open.
+    Config.MaxWindowRadius = 0; % set to zero to not-use
     
-    Config.isMaxWindow = false;
-    Config.MaxWindowRadius = 5;
+    
+    
+    switch ImageType
+        case "Unkown"
+            return % as is
+        case "Red"
+
+        case "Natural"
+            
+        case "Flask"
+            Config.SubstructBackgroundRadius = 0;
+            Config.PercentDarkest = 80;
+        case "Coating"
+            Config.PercentDarkest = 35;
+        otherwise
+            error("No such type")
+           
+   end % switch
 
 end % default_CoatingCover_config

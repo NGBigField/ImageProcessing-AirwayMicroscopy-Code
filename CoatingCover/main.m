@@ -2,13 +2,27 @@
 
 Paths = PathsClass( string(pwd) , "search" );
 
-%%
+%% one segmentation of Flask Image:
+Config = default_CoatingCover_config("Flask");
+Config.isPlotAllImages = true;
+
+Config.SubstructBackgroundRadius = 0;
+Config.PercentDarkest = 80;
+Config.openRadius = 0;
+
+
+Im = imread( Paths.ImagesForComparison.Flask );
+
+[cell_coverage , binary_image] =  calc_image_cell_coverage(Im , Config);
+disp(cell_coverage)
+%% Go over all Coating:
 Data = struct();
 Data.day_3 = coating_struct();
 Data.day_5 = coating_struct();
 Data.day_7 = coating_struct();
 
 Config = default_CoatingCover_config();
+Config.isPlotAllImages = false;
 
 % for each day:
 for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )

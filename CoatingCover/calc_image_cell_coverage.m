@@ -1,4 +1,4 @@
-function [cell_coverage , binary_image] = calc_image_cell_coverage(Im , config)
+function [cell_coverage , binary_image] = calc_image_cell_coverage(Im , Config)
 %[cell_coverage , binary_image] = calc_image_cell_coverage(Im)
 % Calculates the Cell Coverage of a dead-babies-lugns-iamge.
 % 
@@ -10,11 +10,11 @@ function [cell_coverage , binary_image] = calc_image_cell_coverage(Im , config)
 %
 arguments
     Im % Image
-    config = []  % Structure
+    Config = []  % Structure
 end
 
 
-binary_image  = segment_coating_image(Im , config);
+binary_image  = segment_coating_image(Im , Config);
 cell_coverage = calc_white_pixels_percentage(binary_image);
 
 
@@ -22,62 +22,40 @@ end % function calc_image_cell_coverage
 
 
 %% sub functions:
-function binary_im = segment_coating_image(original_image , config)
+function binary_im = segment_coating_image(original_image , Config)
     %get grey image:
     gray_image = rgb2gray(original_image);
     %Subtract background:
-    gray_image = image_substruct_background(gray_image , 4);
+    if Config.SubstructBackgroundRadius ~= 0
+        gray_image = image_substruct_background(gray_image , Config.SubstructBackgroundRadius);
+    end
     %histogram equalization:
     gray_image = histeq(gray_image);
-
     % Get the Gray Value of the  <x> [%] darkest pixels:
-    most_dark_grey_level = most_x_percent_darkest_level(35 , gray_image);
-
+    most_dark_grey_level = most_x_percent_darkest_level( Config.PercentDarkest , gray_image );
     %thresholding:
     binary_im = gray_image > most_dark_grey_level;
-
+    
     % morphological opening on the binary image
     
 
-    if ~isempty(config) && isfield(config , "isOpen") && config.isOpen        
-        SE = strel('disk',   config.openRadius  );
+    if ~isempty(Config) && isfield(Config , "openRadius") && Config.openRadius ~= 0      
+        SE = strel('disk',   Config.openRadius  );
         binary_im  = imopen(binary_im,SE);
     end
-    if ~isempty(config) && isfield(config , "isOpenAgain") && config.isOpenAgain        
-        SE = strel('disk',   config.openRadiusAgain  );
-        binary_im  = imopen(binary_im,SE);
-    end
-    if ~isempty(config) && isfield(config , "isClose") && config.isClose
-        SE = strel('disk',   config.closeRadius  );
-        binary_im  = imopen(binary_im,SE);
-    end  
-    if  ~isempty(config) && isfield(config , "isMaxWindow") && config.isMaxWindow
-        Radius =  config.MaxWindowRadius;
+
+
+    if  ~isempty(Config) && isfield(Config , "MaxWindowRadius") && Config.MaxWindowRadius ~= 0
+        Radius =  Config.MaxWindowRadius;
         binary_im = ordfilt2(binary_im, Radius^2 ,ones(Radius,Radius));
     end
     
-  
-    
-    
-    %{
-    
-         
-    
-        Radius = 2;
-        SE = strel('disk', Radius);
-    
-        binary_im = imdilate(binary_im , SE);
-         
-    
-        binary_im = imerode(binary_im , SE);
-
-    
-    
+    if  ~isempty(Config) && isfield(Config , "isPlotAllImages") && Config.isPlotAllImages
         figure()
-        montage({original_image , binary_im})  ; 
+        montage({original_image , binary_im}) 
+    end
     
-    %}
-    
+
 end
 
 function without_background =  image_substruct_background(im , disk_radius)
