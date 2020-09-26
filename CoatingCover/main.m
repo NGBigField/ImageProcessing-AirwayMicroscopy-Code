@@ -37,20 +37,14 @@ save("Data" , "Data");
 
 %% create bar Graph
 
-
-
-BarHeights = zeros(4,3);
-i=0;
-for coatingType = ["C" , "C_F" , "FBS" , "None" ]
-    i = i + 1;
-    j=0;
-    for day = ["day_3" , "day_5" , "day_7"]
-        j = j + 1;
-        BarHeights(i,j) = mean( Data.(day).(coatingType) )
-    end
+if ~exist("Data" , "var")
+   load("Data");
 end
-    
-bar(BarHeights)
+
+BarHeights = computeMeanValuesFromData(Data);  
+figure()
+BarPlotHandle = bar(BarHeights);
+pretty_plot(BarPlotHandle);
 
 
 %%
@@ -69,3 +63,36 @@ function res =  coating_struct()
     res.None = [];
 
 end
+
+function BarHeights = computeMeanValuesFromData(Data)
+
+    BarHeights = zeros(4,3);
+    i=0;
+    for coatingType = ["C" , "C_F" , "FBS" , "None" ]
+        i = i + 1;
+        j=0;
+        for day = ["day_3" , "day_5" , "day_7"]
+            j = j + 1;
+            BarHeights(i,j) = mean( Data.(day).(coatingType) );
+        end
+    end
+
+end % function 
+
+
+function [] = pretty_plot(BarPlotHandle)
+
+    Axis = BarPlotHandle.Parent;
+    Axis.XTickLabel = {"C" , "C+F" , "FBS" , "None" };
+    
+    Legend = legend("Day 3" , "Day 5" , "Day 7");
+    Legend.Location = 'northwest';
+    
+    
+    grid on
+    
+    
+    ylabel(Axis , "Cell Cover Percentage $$ [\%] $$" , 'Interpreter' ,'latex' , 'FontSize' , 15)
+    ylim(Axis , [0,100])
+    
+end % pretty_plot
