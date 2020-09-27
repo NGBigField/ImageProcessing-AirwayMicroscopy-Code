@@ -179,6 +179,10 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             end
             obj.ImagesManager.mask_over_image(TotalMask , "FromScratch");
         end
+        function [] = resize_masks(obj, Scaling)
+            disp(1);
+            
+        end
     end % methods (Access = public)
     
     %%  Segmentation Algorithms:

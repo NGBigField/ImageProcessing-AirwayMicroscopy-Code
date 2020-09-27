@@ -1,4 +1,4 @@
-function [cell_coverage , binary_image] = calc_image_cell_coverage(Im , Config)
+function [cell_coverage , binary_image , gray_image] = calc_image_cell_coverage(Im , Config)
 %[cell_coverage , binary_image] = calc_image_cell_coverage(Im)
 % Calculates the Cell Coverage of a dead-babies-lugns-iamge.
 % 
@@ -14,7 +14,7 @@ arguments
 end
 
 
-binary_image  = segment_coating_image(Im , Config);
+[binary_image , gray_image]  = segment_coating_image(Im , Config);
 cell_coverage = calc_white_pixels_percentage(binary_image);
 
 
@@ -22,7 +22,7 @@ end % function calc_image_cell_coverage
 
 
 %% sub functions:
-function binary_im = segment_coating_image(original_image , Config)
+function [binary_im , gray_image] = segment_coating_image(original_image , Config)
     %get grey image:
     gray_image = rgb2gray(original_image);
     %Subtract background:
@@ -44,15 +44,9 @@ function binary_im = segment_coating_image(original_image , Config)
         binary_im  = imopen(binary_im,SE);
     end
 
-
     if  ~isempty(Config) && isfield(Config , "MaxWindowRadius") && Config.MaxWindowRadius ~= 0
         Radius =  Config.MaxWindowRadius;
         binary_im = ordfilt2(binary_im, Radius^2 ,ones(Radius,Radius));
-    end
-    
-    if  ~isempty(Config) && isfield(Config , "isPlotAllImages") && Config.isPlotAllImages
-        figure()
-        montage({original_image , binary_im}) 
     end
     
 

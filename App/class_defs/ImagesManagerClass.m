@@ -136,6 +136,7 @@ classdef ImagesManagerClass < handle
             if obj.Config.Resolution < 100
                 Scaling =  obj.Config.Resolution/100;
                 obj.ColoredImage_Processed = imresize(obj.OriginalImage , Scaling);
+                obj.SegmentAlgo.resize_masks(Scaling);
             elseif obj.Config.Resolution < 0 || obj.Config.Resolution  > 100
                 error("Not possible");
             elseif obj.Config.Resolution ==0

@@ -1,28 +1,18 @@
-%           close all; clearvars ; clc;  
+close all; clearvars ; clc;  
 
 Paths = PathsClass( string(pwd) , "search" );
 
-%% one segmentation of Flask Image:
-Config = default_CoatingCover_config("Flask");
-Config.isPlotAllImages = true;
 
-Config.SubstructBackgroundRadius = 0;
-Config.PercentDarkest = 80;
-Config.openRadius = 0;
-
-
-Im = imread( Paths.ImagesForComparison.Flask );
-
-[cell_coverage , binary_image] =  calc_image_cell_coverage(Im , Config);
-disp(cell_coverage)
 %% Go over all Coating:
 Data = struct();
 Data.day_3 = coating_struct();
 Data.day_5 = coating_struct();
 Data.day_7 = coating_struct();
 
+Settings = struct();
+Settings.howManyImages2Save = "1 per type per day" ; % "All"/"1 per type per day"/"Only first Image";
+
 Config = default_CoatingCover_config();
-Config.isPlotAllImages = false;
 
 % for each day:
 for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
@@ -32,7 +22,8 @@ for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
     for coatingTypeIndex = 1 : length( dayStruct.subDirectories )       
         coatingTypeStruct = dayStruct.( dayStruct.subDirectories{coatingTypeIndex} );
         % randomaly choose an image index to show later: 
-        ImageIndex2Show = randi( length(coatingTypeStruct.Images ) );
+        ImageIndex2ShowAndSave = raffle_image_index();
+        randi( length(coatingTypeStruct.Images ) );
 
         % for each image:
         for imIndex = 1 : length(coatingTypeStruct.Images )
@@ -44,19 +35,19 @@ for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
             % save Data:
             Data.(dayStruct.key).(coatingTypeStruct.key) = [ Data.(dayStruct.key).(coatingTypeStruct.key)  , cell_coverage];
             % Plot images side by side if we're on the lucky number:
-            imiges_side_by_side_binary_with_original(Im,binary_image,imIndex,ImageIndex2Show,  coatingTypeStruct , dayStruct , cell_coverage);
+            imiges_side_by_side_binary_with_original(Im,binary_image,imIndex,ImageIndex2ShowAndSave,  coatingTypeStruct , dayStruct , cell_coverage , Paths , Settings);
             
             
         end % imIndex
     end  % coatingTypeIndex
 end % dayIndex
 
-saveFolder = string(pwd) + filesep + "Results";
+saveFolder = Paths.Results.Coating.OurResults.Path ;
 save(saveFolder+filesep+"Data" , "Data");
 
 %% create bar Graph
 
-saveFolder = string(pwd) + filesep + "Results";
+saveFolder = Paths.Results.Coating.OurResults.Path ;
 if ~exist("Data" , "var")
    load(saveFolder+filesep+"Data");
 end
@@ -129,44 +120,6 @@ function [] = pretty_plot(BarPlotHandle)
     
 
 end % pretty_plot
-
-function [] = imiges_side_by_side_binary_with_original(Original_Im,BW_Im ,ImageIndex,ImageIndex2Show,  coatingTypeStruct , dayStruct , cell_coverage )
-
-    if ImageIndex ~= ImageIndex2Show
-        return
-    end
-    
-    FigH = figure();
-    MontageH = montage({Original_Im, BW_Im});
-    Axis = MontageH.Parent;
-    
-    
-    DayAndTypeString = dayStruct.Name + " - Coating Type  " + coatingTypeStruct.Name;
-    [~ , ImageString , ~ ]      = fileparts( coatingTypeStruct.Images{ImageIndex} );
-    CoverageString   = "Cell Coverage = " + string(cell_coverage) + " [%]";
-    
-    FigH.Name   = DayAndTypeString;
-    Axis.Title.String  = DayAndTypeString + "  - Image "+ ImageString + newline + CoverageString;
-    Axis.Title.Interpreter = 'none';
-    Axis.Title.FontSize = 16;
-    
-    
-    Axis.XAxis.Visible = "on";
-    XLimits = Axis.XLim;
-    Axis.XTick      = [ XLimits(2)*(1/4) , XLimits(2)*(3/4)];
-    Axis.XTickLabel = ["Original Image"  , "Binary Segmentation"];
-    Axis.XAxis.FontSize = 18;
-    
-    % Adjust window size:
-    FigH.Position(4) = FigH.Position(4)*1.2;
-    FigH.Position(2) = FigH.Position(2)*0.5;
-    
-    % Save:
-    savePath = string(pwd) + filesep + "Results" + filesep + "Segmentation Images" + filesep + DayAndTypeString + ".tif";
-    saveas(FigH,savePath)
-    
-
-end % imiges_side_by_side_binary_with_original
 
 function ErrorBarsHandle = errorbarOnBarPlot(BarHeights , BarHeightsError , BarPlotHandle)
     

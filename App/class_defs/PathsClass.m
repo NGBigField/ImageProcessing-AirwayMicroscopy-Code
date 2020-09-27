@@ -6,6 +6,7 @@ classdef  PathsClass
        AllPictures
        AvailablePictures
        ImagesForComparison
+       Results
    end
     
    methods ( Access = public)
@@ -49,7 +50,10 @@ classdef  PathsClass
            self.CoatingDirectory = organzie_CoatingDirectory_sub_dirs(self.AllDirectories.SuperDirectory4);
            
            % Images for comparison needs a seperate slot:
-           self.ImagesForComparison = organize_ImagesForComparison(self.AllDirectories.SuperDirectory_ImagesForComparison);
+           self.ImagesForComparison = organize_ImagesForComparison(self.AllDirectories.SuperDirectory_ImagesForComparison , self );
+           
+           % Results Directory:
+           self.Results = organize_Results_sub_dirs(self.AllDirectories , self);
            
            %For easy use, seperate all good pictures that can be used.
            self.AvailablePictures = struct(); 
@@ -202,15 +206,59 @@ end
 
 
 
-function ImagesForComparison = organize_ImagesForComparison(SuperDirectory_ImagesForComparison)
+function ImagesForComparison = organize_ImagesForComparison(SuperDirectory_ImagesForComparison , Paths)
 
     % dir(SuperDirectory_ImagesForComparison)
     
     ImagesForComparison = struct();
+    % images
     ImagesForComparison.Red     = SuperDirectory_ImagesForComparison + filesep + "red.png";
     ImagesForComparison.Natural = SuperDirectory_ImagesForComparison + filesep + "23_B1_2.tif";
     ImagesForComparison.Flask   = SuperDirectory_ImagesForComparison + filesep + "flask 5_17.5.20.tif";
     ImagesForComparison.Coating = SuperDirectory_ImagesForComparison + filesep + "day 7_collagen_D5_2.tif";
     
+    % info
+    ImagesForComparison.info = struct();
+    ImagesForComparison.info.Coating = struct();
+    ImagesForComparison.info.Coating.dayStruct         = Paths.CoatingDirectory.day_7  ;
+    ImagesForComparison.info.Coating.coatingTypeStruct = Paths.CoatingDirectory.day_7.C;
+    ImagesForComparison.info.Coating.ImageIndex        = 6 ;
 
 end
+
+
+function Results = organize_Results_sub_dirs(AllDirectories , Paths)
+
+    % Main struct:
+    %============% 
+    
+    Results = struct();
+    ResultsDir = AllDirectories.DataDir + filesep + ".." + filesep + "Results";
+    ResultsDir = string( GetFullPath( char( ResultsDir ) ) );
+    Results.Path = ResultsDir;
+    
+    % Sub Struct:
+    %============% 
+    
+    % ImagesForComparison:
+    Results.ImagesForComparison = struct();
+    Results.ImagesForComparison.Path = Results.Path + filesep + "Images for comparison";
+    Results.ImagesForComparison.SegmentationAppResults = struct();
+    Results.ImagesForComparison.SegmentationAppResults.Path =  Results.ImagesForComparison.Path + filesep + "SegmentationApp Results" ;
+    
+    % Coating:
+    Results.Coating = struct();
+    Results.Coating.Path       = Results.Path  + filesep + "Coating";
+    Results.Coating.OurResults = struct();
+    Results.Coating.OurResults.Path = Results.Coating.Path  + filesep + "Our Results";
+    Results.Coating.OurResults.SegmentationImages = struct();
+    Results.Coating.OurResults.SegmentationImages.Path = Results.Coating.OurResults.Path + filesep + "Segmentation Images";    
+    
+    % Temp Results:
+    Results.TempResults = struct();
+    Results.TempResults.Path = Paths.AllDirectories.DataDir + filesep + "tempResults";
+    Results.TempResults.tempMask_FullPath      = Results.TempResults.Path + filesep + "tempMask.mat";
+    Results.TempResults.tempGrayImage_FullPath = Results.TempResults.Path + filesep + "tempGrayImage.tif";
+
+
+end % self.Results = organize_Results_sub_dirs(self.AllDirectories)

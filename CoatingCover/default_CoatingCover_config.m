@@ -4,6 +4,7 @@ function Config = default_cell_cover_config(ImageType)
     end
     
     Config = struct();
+    Config.ImageType = ImageType;
     
     Config.SubstructBackgroundRadius = 2;
     Config.PercentDarkest = 35;
