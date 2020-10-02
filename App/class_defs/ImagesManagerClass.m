@@ -82,6 +82,15 @@ classdef ImagesManagerClass < handle
                 obj.Config.(InputField) = kwargs.(InputField);
             end
         end
+        function [MaskColor] = get_MaskColor(obj)
+            if obj.Config.Image2Show_color == "Colored"
+                MaskColor = obj.ApearanceValues.MaskColor.ColoredImage;
+            elseif obj.Config.Image2Show_color == "Gray"
+                MaskColor = obj.ApearanceValues.MaskColor.GrayImage;
+            else
+               error("Not a legit Image2Show_color. Function got :" + string(obj.Config.Image2Show_color) ); 
+            end
+        end % get_MaskColor
         function [Res] = get(obj , requestStr)
             switch lower(string(requestStr))
                 case lower("OriginalImage")
@@ -98,6 +107,12 @@ classdef ImagesManagerClass < handle
                     Res = obj.get("PlottedImage");
                 case lower("Image2Show_Origin")
                     Res = obj.get_Image2Show_Origin();
+                case lower("MaskColor")
+                    Res = obj.get_MaskColor();
+                case lower("Image2Show_Size")
+                    Res = size(obj.Image2Show);                    
+                case lower("OriginalImage_Size")
+                    Res = size(obj.OriginalImage);
                 otherwise
                     error("Unknown request string for method get() ");
             end
@@ -109,9 +124,9 @@ classdef ImagesManagerClass < handle
         end
         function [] = mask_over_image(obj , Mask  , option )
             if nargin >=3  &&  option == "FromScratch"
-                obj.Image2Show = add_mask_over_image(   obj.get("Image2Show_Origin") ,  Mask  ,  obj.ApearanceValues.MaskColor );
+                obj.Image2Show = add_mask_over_image(   obj.get("Image2Show_Origin") ,  Mask  ,  obj.get("MaskColor")  );
             else
-                obj.Image2Show = add_mask_over_image(   obj.get("Image2Show")        ,  Mask  ,  obj.ApearanceValues.MaskColor );
+                obj.Image2Show = add_mask_over_image(   obj.get("Image2Show")        ,  Mask  ,  obj.get("MaskColor")  );
             end
             obj.show_image();
         end
@@ -136,12 +151,13 @@ classdef ImagesManagerClass < handle
             if obj.Config.Resolution < 100
                 Scaling =  obj.Config.Resolution/100;
                 obj.ColoredImage_Processed = imresize(obj.OriginalImage , Scaling);
-                obj.SegmentAlgo.resize_masks(Scaling);
             elseif obj.Config.Resolution < 0 || obj.Config.Resolution  > 100
                 error("Not possible");
             elseif obj.Config.Resolution ==0
-                obj.ColoredImage_Processed = imresize(obj.OriginalImage , 0.001);
+                Scaling = 0.001;
+                obj.ColoredImage_Processed = imresize(obj.OriginalImage , Scaling);
             elseif obj.Config.Resolution == 100
+                Scaling = 1;
                 obj.ColoredImage_Processed = obj.OriginalImage;
             else
                 error("What other option do we got? ");
@@ -171,6 +187,7 @@ classdef ImagesManagerClass < handle
             obj.Image2Show = obj.get("Image2Show_Origin");
             
             % Add mask if exists:
+            obj.SegmentAlgo.scaling = Scaling;
             obj.SegmentAlgo.replot_all_masks();
             
         end

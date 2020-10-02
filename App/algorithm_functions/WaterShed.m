@@ -1,4 +1,4 @@
-function [ NewOverallMask ] = WaterShed(GrayIm , Masks_cell , Params)
+function [ NewTotallMask ] = WaterShed(GrayIm , Masks_cell , Params)
 %WATERSHED Flood-Fill image
 % Our Watershed Function
 %
@@ -11,7 +11,7 @@ tolerance = Params.Tolerance;
 GrayIm = imadjust(GrayIm);
 
 % Create empty mask.
-NewOverallMask = false(size(GrayIm,1),size(GrayIm,2));
+NewTotallMask = false(size(GrayIm,1),size(GrayIm,2));
 
 for i = 1 : length(Masks_cell)
     Mask = Masks_cell{i};
@@ -28,7 +28,7 @@ for i = 1 : length(Masks_cell)
     
     % Flood fill
     addedRegion = grayconnected(GrayIm, centroid(2), centroid(1), tolerance) ;
-    NewOverallMask = NewOverallMask | addedRegion;
+    NewTotallMask = NewTotallMask | addedRegion;
 end
 
 % Create masked image.

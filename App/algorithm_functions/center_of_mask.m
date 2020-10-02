@@ -1,6 +1,6 @@
 function [Mask_out ,centroid ]= center_of_mask(Mask_in )
     % get center of masks as a smaller mask:
-    stats = regionprops(Mask_in , 'Centroid');
+    stats = regionprops(full(Mask_in) , 'Centroid');  %full converts sparse matrix to full matrix.  if already full, does nothing.
     centroid = round( stats.Centroid );
       
     Radius_sqrd = 20;
