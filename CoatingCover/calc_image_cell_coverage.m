@@ -39,12 +39,12 @@ function [binary_im , gray_image] = segment_coating_image(original_image , Confi
     % morphological opening on the binary image
     
 
-    if ~isempty(Config) && isfield(Config , "openRadius") && Config.openRadius ~= 0      
+    if ~isempty(Config) && isfield(Config , "openRadius") && Config.openRadius > 0      
         SE = strel('disk',   Config.openRadius  );
         binary_im  = imopen(binary_im,SE);
     end
 
-    if  ~isempty(Config) && isfield(Config , "MaxWindowRadius") && Config.MaxWindowRadius ~= 0
+    if  ~isempty(Config) && isfield(Config , "MaxWindowRadius") && Config.MaxWindowRadius > 0
         Radius =  Config.MaxWindowRadius;
         binary_im = ordfilt2(binary_im, Radius^2 ,ones(Radius,Radius));
     end

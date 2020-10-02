@@ -1,5 +1,6 @@
 close all; clearvars ; clc;  
-Paths = PathsClass( string(pwd) , "search" );
+%Paths = PathsClass( string(pwd) , "search" );
+Paths = PathsClass( string(pwd) , "given", "C:\Users\tarama\Technion\Image Processing - Airway Microscopy - General\Data" );
 %% Load Settings:
 Im = imread( Paths.ImagesForComparison.Coating );
 ImageIndex         = Paths.ImagesForComparison.info.Coating.ImageIndex;
@@ -20,7 +21,7 @@ filttered_binary_image = bwpropfilt(~binary_image, "Area" , [lowerAreaLimit , in
 
 %imiges_side_by_side_binary_with_original(    Im         , filttered_binary_image , ImageIndex ,  0              , coatingTypeStruct , dayStruct , cell_coverage , Paths , Settings );
 figure();
-montage({Im , gray_image , binary_image});
+montage({Im , gray_image , binary_image, filttered_binary_image});
 
 %%
 
