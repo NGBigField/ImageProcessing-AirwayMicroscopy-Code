@@ -6,6 +6,8 @@ classdef WindowsManagerClass  < handle
         ImagesControl
         ImageWindow
         has_ImageWindow = false;
+        
+        Config = struct("UpdateAllOpenWindows" , true)
     end
     
     methods (Access = public)
@@ -36,10 +38,22 @@ classdef WindowsManagerClass  < handle
         end % set
         %% Images Commands:
         function [] = show_image(obj , Im)
+            isPlotOnMain = false;
+            isPlotOnImageWindow = false;
             if obj.has_ImageWindow
-                obj.ImageWindow.show_image(Im);
+                isPlotOnImageWindow = true;
+                if obj.Config.UpdateAllOpenWindows
+                    isPlotOnMain = true;
+                end
             else
-                 obj.MainApp.show_image(Im);
+                isPlotOnMain =true;
+            end
+            
+            if isPlotOnMain
+                obj.MainApp.show_image(Im);
+            end
+            if isPlotOnImageWindow                
+                obj.ImageWindow.show_image(Im);
             end
         end
         %% Windows:

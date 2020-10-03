@@ -4,7 +4,7 @@ function [is_exist] = check_exist_folder(ParentFolder , FolderName)
 listing = dir(ParentFolder);
 for i = 1:length(listing)
     file = listing(i);
-    if (file.name == FolderName)
+    if (string(file.name) == FolderName)
         is_exist = true;
         return
     end

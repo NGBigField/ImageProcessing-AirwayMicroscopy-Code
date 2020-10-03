@@ -7,11 +7,12 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         Params = default_params();
 
         Masks_cell = {}  % the thing that we're looking for. Each mask in the cell array is for a seperate ROI and finally for a seperate living/dead cell area.
+        Masks_Total = [];
+        
         ImagesManager % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
         WindowsManager ; % Manges and controls all open apps and windows 
         
         State  = AlgorithmStateEnum.Idle;
-        scaling = 1;
     end
     
     methods (Access = public)
@@ -106,21 +107,55 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                         error("Unkown AlgorithmFunction");
             end%switch
             obj.stop_algorithm();
-            obj.calc_and_show_mask_cover_percentage();
         end % start_algorithm 
         function  [] = stop_algorithm(obj)
-            % Are we stopping, or just asking to stop:
             disp("Stopping Algorithm");
             obj.State = AlgorithmStateEnum.Idle;
             obj.WindowsManager.set_algoInProgress(  "off" );
             obj.WindowsManager.update_progress_bar(0); % reset progress bar;
+            obj.calc_and_show_mask_cover_percentage();
+            % update images with the new mask and show it:
+            obj.ImagesManager.mask_over_image( obj.total_mask("CurrentResolution") , "FromScratch" )
+            obj.ImagesManager.show_image();
         end % stop_algorithm
+        %% Data from other objects:
+        function [Scaling] = scaling(obj)
+            Scaling = obj.ImagesManager.Config.Resolution/100;
+            if Scaling < 0 || Scaling > 1
+                error("Scaling is not legit. Scaling="+string(Scaling));
+            end
+        end        
         %% Masks:
+        function tf = is_exist_masks(obj)
+             if     (  isempty(obj.Masks_cell) && ~isempty(obj.Masks_Total) ) 
+                 if any(obj.Masks_Total) % is there any non-zero element in mask?
+                     error("Seems that only Masks_cell is empty. What about Masks_Total? ");
+                 else
+                     tf = true;
+                 end
+             elseif ( ~isempty(obj.Masks_cell) &&  isempty(obj.Masks_Total) )
+                 error("Seems that only Masks_Total is empty. What about Masks_cell? ");
+             elseif ( ~isempty(obj.Masks_cell) && ~isempty(obj.Masks_Total) ) 
+                 tf = true;
+             elseif (  isempty(obj.Masks_cell) &&  isempty(obj.Masks_Total) ) 
+                 tf = false;
+             else
+                 error("Impossible option");
+             end
+        end % function is_no_masks
         function [] = add_mask(obj , Mask)
-            obj.Masks_cell{end+1} = sparse( obj.resize_mask_to_full_resolution(Mask) );
-        end
+            FullResolutionMask = obj.resize_mask_to_full_resolution(Mask) ;
+            if ~obj.is_exist_masks()
+                obj.Masks_Total = zeros(size(FullResolutionMask));
+            end            
+            % Keep in Object:
+            obj.Masks_cell{end+1} = sparse(FullResolutionMask );
+            % Add to Mask_Total:
+            obj.Masks_Total = obj.Masks_Total | FullResolutionMask;
+        end % function [] = add_mask(obj , Mask)
         function [] = clear_masks(obj)
             obj.Masks_cell = {};
+            obj.Masks_Total = [];
         end
         function [ShrinkedTotalMask] = shrink_masks(obj)
             ShrinkedTotalMask = false(size(obj.Masks_cell{1}));
@@ -134,7 +169,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             TotalMask = obj.total_mask();
             maskCover = sum(TotalMask ,'all');
             % Calc Image Totall Cover            
-            imageSize = obj.ImagesManager.get("Image2Show_Size");
+            imageSize = obj.ImagesManager.get("OriginalImage_Size");
             imageCover = imageSize(1)*imageSize(2);
             % Calc Percentage:
             maskPercentage = 100*maskCover/imageCover;
@@ -160,55 +195,68 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         function [] =  remove_mask(obj , mask_index)
             obj.Masks_cell(mask_index) = [];
         end
-        function [TotalMask] = total_mask(obj)
+        function [TotalMask] = total_mask(obj , ResolutionStr)
             arguments
-                obj SegmentationAlgoClass                
+                obj SegmentationAlgoClass
+                ResolutionStr string {mustBeMember(ResolutionStr,["FullResolution","LowerResolution","CurrentResolution"])} = "FullResolution"
             end
             
-            if  isempty(obj.Masks_cell)
-                TotalMask = [];
+            % get TotalMask at Full Resolution:
+            if obj.is_exist_masks()
+                TotalMask = obj.Masks_Total;                      
             else
-                scalingFactor = obj.scaling;
-                
-                ImSize = obj.ImagesManager.get("Image2Show_Size");                
-                TotalMask = false([ImSize(1) , ImSize(2)]);
-                for i = 1 : length(obj.Masks_cell)
-                    Mask = full(obj.Masks_cell{i});
-                    if scalingFactor<1
-                        Mask = imresize(Mask , scalingFactor);
-                    end
-                    TotalMask = TotalMask | Mask ;
+                ImageSize = obj.ImagesManager.get("OriginalImage_Size");
+                TotalMask = zeros([ImageSize(1) , ImageSize(2)]);
+            end
+            
+            %Convert to lower resolution if that's what we asked for:
+            if (ResolutionStr=="LowerResolution" || ResolutionStr=="CurrentResolution" )  
+                if obj.scaling<1
+                    TotalMask = imresize(TotalMask , obj.scaling);
+                else
+                    % do nothing
                 end
-            end            
+            elseif ResolutionStr=="FullResolution"
+                % Do nothing
+            else
+                error("ResolutionStr="""+ResolutionStr+""". Not a legit string.");
+            end
+            
         end % total_mask
         function [] = replot_all_masks(obj)
-            arguments
-                obj SegmentationAlgoClass                
-            end
-            
-            NumMasksCell = length(obj.Masks_cell);
-            if NumMasksCell == 0
+
+            if ~obj.is_exist_masks()
                 return
             end
             
             TotalMask = obj.total_mask();
             obj.ImagesManager.mask_over_image(TotalMask , "FromScratch");            
         end
-        function [resized_mask_cell_array] = resized_masks_cell_array(obj , mask_cell_array ,  resizeStr)
-            % resizeStr == "Back2OriginalSize" / "ReducedSize" ;
+        function [resized_mask_cell_array] = resized_masks_cell_array(obj , mask_cell_array ,  resizeStr , matrixTypeStr)
+            arguments
+                obj SegmentationAlgoClass
+                mask_cell_array 
+                resizeStr string = "FullResolution"
+                matrixTypeStr string = "sparse"
+            end
+            
+            %function [resized_mask_cell_array] = resized_masks_cell_array(obj , mask_cell_array ,  resizeStr)
+            % resizeStr == "FullResolution" / "LowerResolution" / "CurrentResolution" ;
+            
             if isempty(mask_cell_array)
+                resized_mask_cell_array = {};
                 return
             end
                 
             resized_mask_cell_array = cell(size(mask_cell_array));
-            for i = 1 : length(obj.Masks_cell)
+            for i = 1 : length(mask_cell_array)
                 if obj.scaling == 1
                     resized_mask_cell_array{i} = mask_cell_array{i};
                 elseif obj.scaling < 1 && obj.scaling > 0
-                    if resizeStr == "ReducedSize"
-                        resized_mask_cell_array{i} = sparse( imresize( full( mask_cell_array{i} ) , obj.scaling) );
-                    elseif resizeStr == "Back2OriginalSize"
-                        resized_mask_cell_array{i} = sparse( obj.resize_mask_to_full_resolution( full(mask_cell_array{i}) ) );
+                    if resizeStr == "LowerResolution"
+                        resized_mask_cell_array{i} = SparseOrFull( imresize( full( mask_cell_array{i} ) , obj.scaling) , matrixTypeStr);
+                    elseif resizeStr=="FullResolution" || resizeStr=="CurrentResolution"
+                        resized_mask_cell_array{i} = SparseOrFull( obj.resize_mask_to_full_resolution( full(mask_cell_array{i}) ) , matrixTypeStr);                        
                     else
                        error("Not a legit resizeStr. We got resizeStr = " + string(resizeStr)); 
                     end                    
@@ -241,10 +289,10 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                                               obj.Params.AdaptiveThreshold.SolidityLowerThresh, obj.Params.AdaptiveThreshold.SolidityUpperThresh);           
             obj.WindowsManager.update_progress_bar(20/100); % Update progressbar:            
             % split the mask into seperate mask for each blob:
-            obj.Masks_cell = seperate_mask(TotalMask , "sparse");
+            obj.Masks_cell = obj.resized_masks_cell_array( seperate_mask(TotalMask , "sparse"), "FullResolution" );
+            obj.Masks_Total = obj.resize_mask_to_full_resolution(TotalMask);
             obj.WindowsManager.update_progress_bar(50/100); % Update progressbar:              
             % Update image in window
-            obj.replot_all_masks();
             obj.WindowsManager.update_progress_bar(100/100); % Update progressbar:        
             
         end % start_AdaptiveThreshold
@@ -262,6 +310,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             SmoothFactor        = obj.Params.MatlabBuiltIn.SmoothFactor;
             ContractionBias     = obj.Params.MatlabBuiltIn.ContractionBias;
             
+            MasksCellArray      = obj.resized_masks_cell_array(obj.Masks_cell , "CurrentResolution" , "full");
             
             % Iterate many times:
             for frameIndex = 1 : MaxIterationNum/IterationsPerFrame
@@ -270,16 +319,13 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                 TotallMask2Show     = zeros( size( Im ) );
                 
                 %Go over all masks:
-                if isempty( obj.Masks_cell )
+                if isempty(MasksCellArray)
                     break                    
                 end
                 for maskIndex = 1 : length( obj.Masks_cell )
                                        
-                    MaskIn = full( obj.Masks_cell{maskIndex} );
-                    % Rescale Mask:
-                    if obj.scaling < 1
-                        MaskIn = imresize(MaskIn , obj.scaling);
-                    end
+
+                    MaskIn = MasksCellArray{maskIndex};
                     
                     % Active Contours on this mask:
                     MaskOut = activecontour(Im , MaskIn , IterationsPerFrame , Method , ...
@@ -324,11 +370,15 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             error("start_Lankton is not yet part of what we can run.");
         end % start_MatlabBuiltIn
         function [] = start_Watershed(obj)
-            input_Mask_cell_array = obj.resized_masks_cell_array( obj.Masks_cell , "ReducedSize" );
+            % get masks with correct dimensions (before or after resolution reduction):
+            input_Mask_cell_array = obj.resized_masks_cell_array( obj.Masks_cell , "LowerResolution" );
+            % Watershed algo:
             [newTotalMask ] = WaterShed( obj.ImagesManager.get("GrayImage") , input_Mask_cell_array , obj.Params.WaterShed);
-            obj.ImagesManager.mask_over_image( newTotalMask  , "FromScratch" );
-            output_Mask_cell_array  = seperate_mask(newTotalMask ,"sparse");
-            obj.Masks_cell = obj.resized_masks_cell_array( output_Mask_cell_array , "Back2OriginalSize" );
+            FullResolutionTotalMask = obj.resize_mask_to_full_resolution(newTotalMask);
+            % update this object with the new masks:
+            obj.Masks_cell  = seperate_mask(FullResolutionTotalMask ,"sparse");
+            obj.Masks_Total = FullResolutionTotalMask;
+            
         end % start_Watershed
     end %  (Access = protected)
     
@@ -361,3 +411,20 @@ function MatlabMethodString =  Method2MatlabString(GivenMethodString)
     end
 
 end % Method2MatlabString
+
+function OutputMatrix = SparseOrFull(InputMatrix , matrixTypeStr)
+    arguments
+        InputMatrix
+        matrixTypeStr string {mustBeMember(matrixTypeStr,["sparse","full"])} = "sparse"
+    end
+    
+    if     lower(matrixTypeStr)=="sparse"
+        OutputMatrix = sparse(InputMatrix);
+    elseif  lower(matrixTypeStr)=="full"
+        OutputMatrix = full(InputMatrix);
+    else 
+        error("matrixTypeStr="""+matrixTypeStr+""".  Not a legit input string.") ;
+    end
+        
+    
+end

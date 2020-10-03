@@ -127,8 +127,7 @@ classdef ImagesManagerClass < handle
                 obj.Image2Show = add_mask_over_image(   obj.get("Image2Show_Origin") ,  Mask  ,  obj.get("MaskColor")  );
             else
                 obj.Image2Show = add_mask_over_image(   obj.get("Image2Show")        ,  Mask  ,  obj.get("MaskColor")  );
-            end
-            obj.show_image();
+            end            
         end
         function [] = clear_masks(obj)
             obj.update_images_from_OriginalImage();
@@ -187,9 +186,10 @@ classdef ImagesManagerClass < handle
             obj.Image2Show = obj.get("Image2Show_Origin");
             
             % Add mask if exists:
-            obj.SegmentAlgo.scaling = Scaling;
-            obj.SegmentAlgo.replot_all_masks();
+            obj.mask_over_image( obj.SegmentAlgo.total_mask("CurrentResolution") , "FromScratch" );     
             
+            % replot image:
+            obj.show_image();
         end
     end % methods (Access = protected)
 end

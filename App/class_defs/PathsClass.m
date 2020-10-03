@@ -10,11 +10,26 @@ classdef  PathsClass
    end
     
    methods ( Access = public)
-       function self = PathsClass(current_data_path , method , given_data_path)
+       function self = PathsClass(app_main_folder , method , given_data_folder)
+           %function self = PathsClass(app_main_folder , method , given_data_folder)
+           %  Construcor of calss PathsClass
+           % 
+           %  input arguments:
+           %     * app_main_folder   (string)
+           %     * method            (string) must be 'Relative','Search','Given'.   Default Value = 'Relative'.
+           %     * given_data_folder (string) only give it if method=="Given".
+       
+
+           arguments
+               app_main_folder   string
+               method            string {mustBeMember(method,{'Relative','Search','Given','relative','search','given'})} = 'Relative'
+               given_data_folder string = string.empty()
+           end
+           
            %PathsClass(FullPath)  c'tor for Paths object
            % input: 1.  fullpath 
-           %            2.  method:  'Relative' (Default)   /  'Search'   / 'Given'    : methods for searching for data.
-           %            3. if method=='Given' :  path to Data folder
+           %        2.  method:  'Relative' (Default)   /  'Search'   / 'Given'    : methods for searching for data.
+           %        3.  if method=='Given' :  path to Data folder
            
            % check input arguments
            if (nargin >= 2) &&  ~ischar(method) && ~isstring(method) 
@@ -24,18 +39,17 @@ classdef  PathsClass
                method = "relative";
            end
            % act according to input:
-           method = lower(string(method)); % lower case (insesitive string switch)
-           switch method
+           switch lower(string(method)) % lower case (insesitive string switch)
                case "search"
-                   DataDir = search_DataDir(current_data_path);
+                   DataDir = search_DataDir(app_main_folder);
                case "given"
                    if (nargin >= 3)
-                       DataDir =  given_data_path;
+                       DataDir =  given_data_folder;
                    else
                        error("With 'given' must also give full path to data, as third input ");
                    end
                case "relative"
-                   DataDir = current_data_path  + "\..\..\Data" ;
+                   DataDir = app_main_folder  + "\..\..\Data" ;
                otherwise
                    error("Method input is wrong. See correct input");
            end % switch
@@ -44,7 +58,7 @@ classdef  PathsClass
            DataDir=string(GetFullPath(char(DataDir)));
            
            % complete all paths
-           [ self.AllDirectories , self.AllPictures ] = get_all_paths(current_data_path , DataDir);
+           [ self.AllDirectories , self.AllPictures ] = get_all_paths(app_main_folder , DataDir);
            
            % Coating Directory needs some specail attention:
            self.CoatingDirectory = organzie_CoatingDirectory_sub_dirs(self.AllDirectories.SuperDirectory4);
@@ -107,14 +121,20 @@ function DataDir = search_DataDir(mainAppPath)
 current_folder=string(mainAppPath);
 %forbiedn directory (where to stop)  is base directory:
 C = strsplit(mainAppPath,filesep);
-rootFolder = C(1)+filesep+C(2);
+rootFolder = C(1)+filesep;
 
 prev_folder = current_folder;
-DataDir = [] ;
+DataDir = string.empty ;
+StartTime = cputime;
 while prev_folder ~= rootFolder  % Don't go too deep
+    % Don't search for more than 5 seconds:
+    CurrentTime = cputime;
+    if CurrentTime  - StartTime > 5000
+        break
+    end    
     prev_folder = cd(current_folder+filesep+"..")    ; % go to parent folder 
     prev_folder  = string(prev_folder );
-    current_folder = prev_folder+filesep+".." ; %update current folder as parent folder
+    current_folder = string(GetFullPath(char(current_folder+filesep+".."))) ; %update current folder as parent folder
     [is_found] = check_exist_folder(current_folder , "Data");
     if is_found
         DataDir = current_folder + filesep + "Data";
