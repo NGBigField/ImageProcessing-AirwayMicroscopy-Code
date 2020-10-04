@@ -1,6 +1,6 @@
 close all; clearvars ; clc;  
-%Paths = PathsClass( string(pwd) , "search" );
-Paths = PathsClass( string(pwd) , "given", "C:\Users\tarama\Technion\Image Processing - Airway Microscopy - General\Data" );
+Paths = PathsClass( string(pwd) , "search" );
+% Paths = PathsClass( string(pwd) , "given", "C:\Users\tarama\Technion\Image Processing - Airway Microscopy - General\Data" );
 %% Load Settings:
 Im = imread( Paths.ImagesForComparison.Coating );
 ImageIndex         = Paths.ImagesForComparison.info.Coating.ImageIndex;

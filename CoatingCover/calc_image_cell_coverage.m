@@ -39,15 +39,103 @@ function [binary_im , gray_image] = segment_coating_image(original_image , Confi
     % morphological opening on the binary image
     
 
-    if ~isempty(Config) && isfield(Config , "openRadius") && Config.openRadius > 0      
-        SE = strel('disk',   Config.openRadius  );
-        binary_im  = imopen(binary_im,SE);
-    end
+%     if ~isempty(Config) && isfield(Config , "openRadius") && Config.openRadius > 0      
+%         SE = strel('disk',   Config.openRadius  );
+%         binary_im  = imopen(binary_im,SE);
+%     end
+% 
+%     if  ~isempty(Config) && isfield(Config , "MaxWindowRadius") && Config.MaxWindowRadius > 0
+%         Radius =  Config.MaxWindowRadius;
+%         binary_im = ordfilt2(binary_im, Radius^2 ,ones(Radius,Radius));
+%     end
+    
+    %%
+    figure()
+    imshow(original_image)
+    
+    %%
+    close all 
+    
+    BW1 = edge(gray_image,'canny' , 0.6);
+    figure()
+    imshow(BW1)
 
-    if  ~isempty(Config) && isfield(Config , "MaxWindowRadius") && Config.MaxWindowRadius > 0
-        Radius =  Config.MaxWindowRadius;
-        binary_im = ordfilt2(binary_im, Radius^2 ,ones(Radius,Radius));
-    end
+%     BW2 = bwpropfilt(BW1 ,"Area" ,[50 inf]);
+%     figure()
+%     imshow(BW2)
+%     
+    
+    SE = strel('disk' , 4 , 0);
+    BW_test1 = imdilate(BW1,SE);
+    figure()
+    imshow(BW_test1)
+    
+    
+    BW_test2 = bwpropfilt(BW_test1 ,"EulerNumber" ,[-inf  0]);
+    figure()
+    imshow(BW_test2)
+    
+    BW_test3 = imerode(BW_test2,SE);
+    figure()
+    imshow(BW_test3)
+    
+    SE = strel('disk' , 10 , 0);
+    BW_test4 = imclose(BW_test3 , SE);
+    figure()
+    imshow(BW_test4)
+    
+    
+    BW_test5 = ~bwpropfilt(~BW_test4 ,"Area" ,[2000  inf]);
+    figure()
+    imshow(BW_test5)   
+% 
+%     SE = strel('disk' , 7 , 0);
+%     BW3 = imclose(BW2 , SE);
+%     figure()
+%     imshow(BW3)
+    %%
+    close all 
+    img = gray_image;
+    
+    k = 1/10;
+    sigma1 = 0.5  ;
+    sigma2 = sigma1*k;
+    
+    hsize = [3,3];
+    
+    h1 = fspecial('gaussian', hsize, sigma1);
+    h2 = fspecial('gaussian', hsize, sigma2);
+    
+    gauss1 = imfilter(img,h1,'replicate');
+    gauss2 = imfilter(img,h2,'replicate');
+    
+    dogImg = gauss1 - gauss2;
+    
+    figure()
+    imshow(dogImg);
+    
+    %%
+    
+    %{
+    [Gmag,Gdir] = imgradient(gray_image,'sobel');
+    
+    
+    
+    diff_im = Gmag./max(Gmag);
+    [diff_im,T] = histeq(diff_im);
+    figure()
+    imshow(diff_im)
+    %}
+    
+    %{
+        figure()
+        montage({original_image , gray_image , binary_im})
+        impixelinfo
+    
+        figure()
+        imshow(gray_image)
+        impixelinfo
+    %}
     
 
 end
