@@ -9,7 +9,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         Masks_cell = {}  % the thing that we're looking for. Each mask in the cell array is for a seperate ROI and finally for a seperate living/dead cell area.
         Masks_Total = [];
         
-        ImagesManager % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
+        ImagesManager ImagesManagerClass   % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
         WindowsManager ; % Manges and controls all open apps and windows 
         
         State  = AlgorithmStateEnum.Idle;
@@ -159,12 +159,23 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             obj.Masks_cell = {};
             obj.Masks_Total = [];
         end
-        function [ShrinkedTotalMask] = shrink_masks(obj)
-            ShrinkedTotalMask = false(size(obj.Masks_cell{1}));
-            for i = 1 : length(obj.Masks_cell)
-                obj.Masks_cell{i} = sparse( center_of_mask(obj.Masks_cell{i}) );
-                ShrinkedTotalMask = ShrinkedTotalMask | obj.Masks_cell{i};
+        function [ShrinkedTotalMask2Show] = shrink_masks(obj )
+            arguments
+                obj SegmentationAlgoClass
             end
+            
+            CurrResolutionImSize = obj.ImagesManager.get("Image2Show_Size");
+            FullResolutionImSize = obj.ImagesManager.get("OriginalImage_Size");
+            
+            ShrinkedTotalMask = false( [ FullResolutionImSize(1) , FullResolutionImSize(2) ] );            
+            for i = 1 : length(obj.Masks_cell)
+                shrinkedMask      = center_of_mask(obj.Masks_cell{i}) ;
+                obj.Masks_cell{i} = sparse(shrinkedMask);
+                ShrinkedTotalMask = ShrinkedTotalMask | shrinkedMask;
+            end
+            obj.Masks_Total = ShrinkedTotalMask; 
+            ShrinkedTotalMask2Show = imresize( ShrinkedTotalMask , [CurrResolutionImSize(1) , CurrResolutionImSize(2)]);
+            
         end
         function maskPercentage = calc_and_show_mask_cover_percentage(obj , TotalMask , ImageSize)
             arguments
@@ -331,6 +342,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             
             ImageSize           = size(Im);
             
+            % masks and mask control
             MasksCellArray      = obj.resized_masks_cell_array(obj.Masks_cell , "CurrentResolution" , "full");
             MasksRecentChanges  = cell(size(MasksCellArray));  
             is_maskFinished     = false(size(MasksCellArray));
@@ -368,6 +380,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                     else % if empty
                         MasksCellArray(maskIndex)     = [];
                         MasksRecentChanges(maskIndex) = [];
+                        is_maskFinished(maskIndex)    = [];
                         disp("Deleted mask at index " + num2str( maskIndex ) );
                         break % Go back to before we've calculated    length( obj.Masks_cell )
                     end                                       
@@ -497,6 +510,7 @@ function [ MaskRecentChanges , is_maskedFinished ]= update_mask_recent_changes(M
     % calculate
     current_change = xor(MaskIn, MaskOut);
     current_change_count = sum(current_change , 'all');
+    % montage({MaskIn , MaskOut , current_change})
     
     % update:
     MaskRecentChanges = [MaskRecentChanges , current_change_count];

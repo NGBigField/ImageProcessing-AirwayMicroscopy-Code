@@ -25,7 +25,7 @@ classdef WindowsManagerClass  < handle
                 optionStr string = string.empty  % can be  "object without app" / "app"
             end
             
-            if optionStr == "app"            
+            if     optionStr == "app"            
                 obj.MainApp = MainCallingObjectHandle ;
                 obj.has_MainApp = true;
             elseif optionStr == "object without app"

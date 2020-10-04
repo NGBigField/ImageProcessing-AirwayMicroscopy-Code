@@ -1,9 +1,9 @@
+%%
 classdef ActiveContoursObject < handle
     
     properties (Access = private)
         Paths ; % Class of all possible paths and images
         SegmentAlgo ; % Class to manage the parameters and execution of the Segmentation Algorithm 
-        AnimationControl = struct('NumIterationsPerUpdate' , 2);
         ImagesManager ;  % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
         WindowsManager ; % Manges and controls all open apps and windows
         ApearanceDefaultVals = struct('DefaultButtonColor' , [0.96, 0.96,0.96] , ...
