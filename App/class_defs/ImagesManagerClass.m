@@ -33,7 +33,7 @@ classdef ImagesManagerClass < handle
             %   Input:  WindowsManager  - handle to WindowsManager object that controls all the apps\windows
             %                ApearanceValues    - struct with properties.
             obj.WindowsManager = WindowsManager;
-            obj.WindowsManager.set_ImagesControl(obj); % pass 'self' to  ImagesControlClass .
+            obj.WindowsManager.set_ImagesManager(obj); % pass 'self' to  ImagesControlClass .
             obj.ApearanceValues = ApearanceValues;
         end
 

@@ -2,27 +2,50 @@ classdef WindowsManagerClass  < handle
     %WindowsManager Manges and controls all open apps and windows
  
     properties
+        % Images Manager Class:
+        ImagesManager
+        
+        % Apps and Windows
         MainApp
-        ImagesControl
-        ImageWindow
-        has_ImageWindow = false;
+        MainObject
+        SingleImageWindow
+        
+        has_MainApp           = false;
+        has_MainObject        = false;
+        has_SingleImageWindow = false;
         
         Config = struct("UpdateAllOpenWindows" , true)
     end
     
     methods (Access = public)
         %% C'tor:
-        function self = WindowsManagerClass( MainAppHandle)
-            %self = SubWindows()  ; C'tor
-            self.MainApp = MainAppHandle ; 
-        end
-        function [] = set_ImagesControl(obj , ImagesControlHandle)
-            obj.ImagesControl = ImagesControlHandle;
-        end
+        function obj = WindowsManagerClass( MainCallingObjectHandle , optionStr)
+            arguments
+                MainCallingObjectHandle
+                optionStr string = string.empty  % can be  "object without app" / "app"
+            end
+            
+            if optionStr == "app"            
+                obj.MainApp = MainCallingObjectHandle ;
+                obj.has_MainApp = true;
+            elseif optionStr == "object without app"
+                obj.MainObject = MainCallingObjectHandle ;
+                obj.has_MainObject = true;
+            else
+                error("optionStr="""+ optionStr +""".  Unexpected optionStr");
+            end
+                
+        end % c'tor
+        function [] = set_ImagesManager(obj , ImagesManagerHandle)
+            obj.ImagesManager = ImagesManagerHandle;
+        end % set_ImagesManager
         %% Set/Get:
         function [] = set(obj , key , value )
             switch key
                 case "Image2Show_color"
+                    if ~obj.has_MainApp
+                        return
+                    end                    
                     if value == "Colored"
                         obj.MainApp.ColoredMenu.Checked = "on";
                         obj.MainApp.GrayMenu.Checked = "off";
@@ -38,36 +61,53 @@ classdef WindowsManagerClass  < handle
         end % set
         %% Images Commands:
         function [] = show_image(obj , Im)
-            isPlotOnMain = false;
-            isPlotOnImageWindow = false;
-            if obj.has_ImageWindow
-                isPlotOnImageWindow = true;
-                if obj.Config.UpdateAllOpenWindows
-                    isPlotOnMain = true;
+            
+            isPlotOnMainApp = false;
+            isPlotOnMainObject = false;
+            isPlotOnSingleImageWindow = false;
+            
+            % decide where to plot:
+            if obj.has_SingleImageWindow
+                isPlotOnSingleImageWindow = true;
+                if obj.Config.UpdateAllOpenWindows && obj.has_MainApp
+                    isPlotOnMainApp = true;
+                end
+                if obj.Config.UpdateAllOpenWindows  && obj.has_MainObject
+                    isPlotOnMainObject = true;
                 end
             else
-                isPlotOnMain =true;
+                if obj.has_MainApp
+                    isPlotOnMainApp =true;
+                elseif obj.has_MainObject
+                    isPlotOnMainObject = true;                    
+                else
+                    error("Seems like WindowsManagerClass has no open windows to show_image() on ");
+                end
             end
             
-            if isPlotOnMain
+            % plot according to decision:
+            if isPlotOnMainApp
                 obj.MainApp.show_image(Im);
             end
-            if isPlotOnImageWindow                
-                obj.ImageWindow.show_image(Im);
+            if isPlotOnMainObject
+                obj.MainObject.show_image(Im);
+            end
+            if isPlotOnSingleImageWindow                
+                obj.SingleImageWindow.show_image(Im);
             end
         end
         %% Windows:
         function [] = show_image_window(obj )
-            %METHOD1 Open and Show ImageWindow
+            %METHOD1 Open and Show SingleImageWindow
             %   if already exist somewhere,  bring it into view
             
-            if obj.has_ImageWindow
-                %
+            if obj.has_SingleImageWindow
+                %Do nothing
             else
-                obj.ImageWindow = ImageWindowApp( obj );
-                obj.has_ImageWindow = true;
+                obj.SingleImageWindow = ImageWindowApp( obj );
+                obj.has_SingleImageWindow = true;
             end
-            Im = obj.ImagesControl.Image2Show ;
+            Im = obj.ImagesManager.Image2Show ;
             obj.show_image(Im);
         end % show_image_window
         
@@ -75,12 +115,14 @@ classdef WindowsManagerClass  < handle
             switch lower(string(window_name_str))
                 case "mainapp" % Close main app and all other apps:
                     delete(obj.MainApp)
-                    delete(obj.ImageWindow)
+                    delete(obj.SingleImageWindow)
                 case "imagewindow"
-                    delete(obj.ImageWindow)  
-                    obj.has_ImageWindow = false;
+                    delete(obj.SingleImageWindow)  
+                    obj.has_SingleImageWindow = false;
+                case "mainObject"
+                    warning("We need to decide what to do in that case");
                 otherwise
-                        error('Wrong windiw_name_str string ');
+                        error("window_name_str="""+string(window_name_str)+""".  Wrong window_name_str string ");
             end % switch
         end
         function [] = set_algoInProgress( obj , on_off_str )
@@ -90,6 +132,7 @@ classdef WindowsManagerClass  < handle
                 case "off"
                     disp("WindowsManagerClass: setting algo in progress: 'off' ");
                 otherwise
+                    error("on_off_str="""+on_off_str+"""  Not an expected string");
             end % switch
             obj.MainApp.set_algoInProgress(on_off_str)
         end % set_algoInProgress( on_off_str )
@@ -101,6 +144,10 @@ classdef WindowsManagerClass  < handle
             end            
         end % update_progress_bar
         function [] = update_mask_cover_percentage(obj , percentageValue)
+            arguments
+                obj WindowsManagerClass
+                percentageValue {mustBeReal , mustBePositive}
+            end            
             obj.MainApp.MaskCoverPercentageEditField.Value = percentageValue;
         end % function update_mask_cover_percentage()
     end % methods (Access = public)
