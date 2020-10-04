@@ -386,10 +386,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                     end                                       
                     % Update the next mask to show:
                     TotallMask2Show = TotallMask2Show  |  MaskOut;
-    
-                    % Check if a mask haven't changed a lot in the last few itterations:
-                    % ==================================================== !!! missing code !!! ====================================================
-                    
+             
                     % check if user asked to terminate
                     if  obj.State == AlgorithmStateEnum.UserAskedToStop                        
                         break % If user asked to stop -  Terminate:

@@ -140,7 +140,9 @@ classdef WindowsManagerClass  < handle
             if progressValue>1 || progressValue<0
                 error("Invalid Value for ProgressBar");
             else
-                obj.MainApp.EmbeddedProgressBar.update( progressValue );
+                if obj.has_MainApp
+                    obj.MainApp.EmbeddedProgressBar.update( progressValue );
+                end
             end            
         end % update_progress_bar
         function [] = update_mask_cover_percentage(obj , percentageValue)
