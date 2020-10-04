@@ -146,7 +146,7 @@ classdef WindowsManagerClass  < handle
         function [] = update_mask_cover_percentage(obj , percentageValue)
             arguments
                 obj WindowsManagerClass
-                percentageValue {mustBeReal , mustBePositive}
+                percentageValue {mustBeReal , mustBeNonnegative}
             end            
             obj.MainApp.MaskCoverPercentageEditField.Value = percentageValue;
         end % function update_mask_cover_percentage()

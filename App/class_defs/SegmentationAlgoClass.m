@@ -175,7 +175,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             
             %if inputs are not given, use full resolution globally known OriginalImage_Size and object own obj.Masks_total to compute maskPercentage
             if isempty(TotalMask)
-                TotalMask = obj.total_mask();
+                TotalMask = obj.total_mask("FullResolution");
             end
             if isempty(ImageSize)
                 ImageSize = obj.ImagesManager.get("OriginalImage_Size");
@@ -330,31 +330,44 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             ContractionBias     = obj.Params.MatlabBuiltIn.ContractionBias;
             
             ImageSize           = size(Im);
+            
             MasksCellArray      = obj.resized_masks_cell_array(obj.Masks_cell , "CurrentResolution" , "full");
+            MasksRecentChanges  = cell(size(MasksCellArray));  
+            is_maskFinished     = false(size(MasksCellArray));
             
             % Iterate many times:
             for frameIndex = 1 : MaxIterationNum/IterationsPerFrame
                 
-                % Create a mask that is the results of all the masks in the current frame:
-                TotallMask2Show     = zeros( ImageSize );
-                
                 %Go over all masks:
-                if checkStopMatlabBuiltIn(MasksCellArray)
+                if checkStopMatlabBuiltIn(MasksCellArray , is_maskFinished)
                     break                    
                 end
-                for maskIndex = 1 : length( MasksCellArray )                                       
+                % Create a mask that is the results of all the masks in the current frame:
+                TotallMask2Show     = zeros( ImageSize );
+                for maskIndex = 1 : length( MasksCellArray )   
+                    
                     MaskIn = MasksCellArray{maskIndex};
+                    % if this mask is already done, skip this itteration
+                    if is_maskFinished(maskIndex) 
+                        TotallMask2Show = TotallMask2Show  |  MaskIn;
+                        continue
+                    end
+                    
                     
                     % Active Contours on this mask:
                     MaskOut = activecontour(Im , MaskIn , IterationsPerFrame , Method , ...
                         'SmoothFactor' , SmoothFactor,...
                         'ContractionBias' , ContractionBias ...
-                        );
+                        );                    
+                    % keep track on mask's changes:
+                    [MasksRecentChanges{maskIndex} , is_maskFinished(maskIndex)] = update_mask_recent_changes(MasksRecentChanges{maskIndex} , MaskIn , MaskOut );
+                    
                     % if masks is empty now, delete it and ignore it for next times
                     if any( MaskOut , 'all') % if it's not empty, save it:
                         MasksCellArray{maskIndex} = MaskOut;
                     else % if empty
-                        MasksCellArray(maskIndex) = [];
+                        MasksCellArray(maskIndex)     = [];
+                        MasksRecentChanges(maskIndex) = [];
                         disp("Deleted mask at index " + num2str( maskIndex ) );
                         break % Go back to before we've calculated    length( obj.Masks_cell )
                     end                                       
@@ -459,12 +472,45 @@ function OutputMatrix = SparseOrFull(InputMatrix , matrixTypeStr)
     
 end
 
-function is_stop = checkStopMatlabBuiltIn(MasksCellArray)
+function is_stop = checkStopMatlabBuiltIn(MasksCellArray , is_maskFinishedArray)
     
     is_stop = false;
     
     if isempty(MasksCellArray)
         is_stop = true;
+    end
+    if all(is_maskFinishedArray)
+        is_stop = true;
+    end
+    
+end
+
+
+function [ MaskRecentChanges , is_maskedFinished ]= update_mask_recent_changes(MaskRecentChanges , MaskIn , MaskOut )
+    
+    is_maskedFinished = false;
+
+    % Constants:
+    MemoryLength = 3;
+    ChangesToFinishThreshold = 10;
+
+    % calculate
+    current_change = xor(MaskIn, MaskOut);
+    current_change_count = sum(current_change , 'all');
+    
+    % update:
+    MaskRecentChanges = [MaskRecentChanges , current_change_count];
+    
+    % trim if we remember too much:
+    if length(MaskRecentChanges) > MemoryLength
+        MaskRecentChanges(1) = [];
+    end
+    
+    % if all recent memory is without much change, mask is finished
+    if length(MaskRecentChanges) >= MemoryLength
+        if all(MaskRecentChanges < ChangesToFinishThreshold)
+            is_maskedFinished = true;
+        end
     end
     
 
