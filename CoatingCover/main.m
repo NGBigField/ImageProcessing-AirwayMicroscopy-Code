@@ -12,7 +12,7 @@ Data.day_7 = coating_struct();
 Settings = struct();
 Settings.howManyImages2Save = "1 per type per day" ; % "All"/"1 per type per day"/"Only first Image";
 
-Config = default_CoatingCover_config();
+Config = default_CoatingCover_config("Coating");
 
 % for each day:
 for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )

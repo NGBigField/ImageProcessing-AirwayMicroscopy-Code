@@ -1,5 +1,7 @@
 close all; clearvars ; clc;  
+add_app_paths(pwd);
 Paths = PathsClass( string(pwd) , "search" );
+
 % Paths = PathsClass( string(pwd) , "given", "C:\Users\tarama\Technion\Image Processing - Airway Microscopy - General\Data" );
 %% Load Settings:
 Im = imread( Paths.ImagesForComparison.Coating );
@@ -13,7 +15,8 @@ Settings.isJustShow = true;
 
 %% Find intiall masks:
 Config = default_CoatingCover_config("Coating");
-Config.MaxWindowRadius = 30;
+
+
 [ cell_coverage , binary_image , gray_image] =  calc_image_cell_coverage(Im , Config);
 
 lowerAreaLimit = 1000;
@@ -55,3 +58,4 @@ disp(cell_coverage);
 
 
 %}
+

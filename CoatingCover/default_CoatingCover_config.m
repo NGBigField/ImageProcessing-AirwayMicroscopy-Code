@@ -7,8 +7,7 @@ function Config = default_cell_cover_config(ImageType)
     Config.ImageType = ImageType;
     
     Config.SubstructBackgroundRadius = 2;
-    Config.PercentDarkest = 35;
-    
+    Config.PercentDarkest = 35;   
     
     Config.openRadius = 2;  % set to 0  to not-open.
     Config.MaxWindowRadius = 0; % set to zero to not-use
@@ -26,6 +25,7 @@ function Config = default_cell_cover_config(ImageType)
             Config.SubstructBackgroundRadius = 0;
             Config.PercentDarkest = 80;
         case "Coating"
+            Config.openRadius = 0;
             Config.PercentDarkest = 35;
         otherwise
             error("No such type")
