@@ -58,6 +58,8 @@ function [binary_im , gray_image] = segment_coating_image(original_image , Confi
     
     %}
     %%
+    figure()
+    imshow(original_image)
 
     BW1 = edge(gray_image,'canny' , 0.6);
     figure()

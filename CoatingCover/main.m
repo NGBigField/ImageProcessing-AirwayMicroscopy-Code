@@ -22,8 +22,7 @@ for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
     for coatingTypeIndex = 1 : length( dayStruct.subDirectories )       
         coatingTypeStruct = dayStruct.( dayStruct.subDirectories{coatingTypeIndex} );
         % randomaly choose an image index to show later: 
-        ImageIndex2ShowAndSave = raffle_image_index();
-        randi( length(coatingTypeStruct.Images ) );
+        ImageIndex2ShowAndSave = randi( length(coatingTypeStruct.Images ) );
 
         % for each image:
         for imIndex = 1 : length(coatingTypeStruct.Images )
