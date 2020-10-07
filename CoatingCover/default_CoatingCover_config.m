@@ -1,18 +1,29 @@
-function Config = default_cell_cover_config(ImageType)
+function [Config , Params ] = default_cell_cover_config(ImageType)
     arguments
         ImageType string = "Unkown"
     end
+    %% Config:
     
     Config = struct();
     Config.ImageType = ImageType;
     
-    Config.SubstructBackgroundRadius = 2;
-    Config.PercentDarkest = 35;   
+    Config.SubstructBackground_SERadius = 2;
     
-    Config.openRadius = 2;  % set to 0  to not-open.
-    Config.MaxWindowRadius = 0; % set to zero to not-use
+    Config.ThreshouldingGrayPercent =  [] ; % 35 is good.   in range [0 100]
+    Config.ThreshouldingGrayLevel    = 85; % in range [0 to 255]
+    
+    Config.MaxWindowRadius = [] ; % set to zero to not-use
+    
+    Config.GrainFiltering_BlackArea = 500; %1000
+    Config.GrainFiltering_WhiteArea = 500;
     
     
+    Config.Smoothing_SERadius = 3;
+    
+    
+    %% Params
+    Params = struct();
+    Params.isShowMontage = false;
     
     switch ImageType
         case "Unkown"
@@ -22,11 +33,9 @@ function Config = default_cell_cover_config(ImageType)
         case "Natural"
             
         case "Flask"
-            Config.SubstructBackgroundRadius = 0;
-            Config.PercentDarkest = 80;
+            
         case "Coating"
-            Config.openRadius = 0;
-            Config.PercentDarkest = 35;
+     
         otherwise
             error("No such type")
            

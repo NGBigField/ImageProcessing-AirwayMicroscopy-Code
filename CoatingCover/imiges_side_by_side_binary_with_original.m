@@ -14,32 +14,43 @@ function [] = imiges_side_by_side_binary_with_original( Original_Im,BW_Im , Imag
     end % switch    
         
 
-    
     FigH = figure();
-    MontageH = montage({Original_Im, BW_Im});
-    Axis = MontageH.Parent;
+    % Adjust window size:
+    FigH.Position(4) = FigH.Position(4)*1.2;
+    FigH.Position(2) = FigH.Position(2)*0.5;
     
+    
+    sbpltH1 = subplot(1,2,1);
+    imshow(Original_Im)
+    title("Original Image")
+    sbpltH2 = subplot(1,2,2);    
+    imshow(BW_Im)
+    title("Binary Segmentation")
+    
+    % axes move together:
+    linkaxes([sbpltH1 , sbpltH2 ])
+    
+    sbpltH1.Position(1) = 0;
+    sbpltH2.Position(1) = (1/2)*1;
+    sbpltH1.Position(3) = (1/2)*1;
+    sbpltH2.Position(3) = (1/2)*1;
+    
+ 
     
     DayAndTypeString = dayStruct.Name + " - Coating Type  " + coatingTypeStruct.Name;
     [~ , ImageString , ~ ]      = fileparts( coatingTypeStruct.Images{ImageIndex} );
     CoverageString   = "Cell Coverage = " + string(cell_coverage) + " [%]";
     
     FigH.Name   = DayAndTypeString;
-    Axis.Title.String  = DayAndTypeString + "  - Image "+ ImageString + newline + CoverageString;
-    Axis.Title.Interpreter = 'none';
-    Axis.Title.FontSize = 16;
     
+    DetalisText = DayAndTypeString + "  - Image "+ ImageString + newline + CoverageString;
+    TitleText = text( 0 , 0 , DetalisText);    
+    TitleText.Units = 'normalized';
+    TitleText.Position = [-1/2 , 1.2 , 0];
+    TitleText.FontSize = 13;
+    TitleText.Interpreter = 'none';
     
-    Axis.XAxis.Visible = "on";
-    XLimits = Axis.XLim;
-    Axis.XTick      = [ XLimits(2)*(1/4) , XLimits(2)*(3/4)];
-    Axis.XTickLabel = ["Original Image"  , "Binary Segmentation"];
-    Axis.XAxis.FontSize = 18;
-    
-    % Adjust window size:
-    FigH.Position(4) = FigH.Position(4)*1.2;
-    FigH.Position(2) = FigH.Position(2)*0.5;
-    
+
     % Save:
     if isfield(Settings , "isJustShow") && Settings.isJustShow
         % Don't save
@@ -48,5 +59,8 @@ function [] = imiges_side_by_side_binary_with_original( Original_Im,BW_Im , Imag
         saveFullPath = saveFolder + filesep + DayAndTypeString + ".tif";
         saveas(FigH,saveFullPath)
     end
+    
+    impixelinfo
+    
 
 end % imiges_side_by_side_binary_with_original

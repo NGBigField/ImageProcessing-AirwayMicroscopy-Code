@@ -1,18 +1,14 @@
 close all; clearvars ; clc;  
-
+add_app_paths(pwd);
 Paths = PathsClass( string(pwd) , "search" );
 
-
 %% Go over all Coating:
-Data = struct();
-Data.day_3 = coating_struct();
-Data.day_5 = coating_struct();
-Data.day_7 = coating_struct();
+Data = DataStruct();
 
-Settings = struct();
+[Config , Settings ] = default_CoatingCover_config("Coating");
+Settings.isShowMontage = true;
 Settings.howManyImages2Save = "1 per type per day" ; % "All"/"1 per type per day"/"Only first Image";
 
-Config = default_CoatingCover_config("Coating");
 
 % for each day:
 for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
@@ -30,7 +26,7 @@ for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
             % read Image:
             Im = imread( coatingTypeStruct.Images{imIndex} );
             % calc Cell-Coverage:
-            [cell_coverage , binary_image] =  calc_image_cell_coverage(Im , Config);
+            [cell_coverage , binary_image] =  calc_image_cell_coverage(Im , Config , Settings );
             % save Data:
             Data.(dayStruct.key).(coatingTypeStruct.key) = [ Data.(dayStruct.key).(coatingTypeStruct.key)  , cell_coverage];
             % Plot images side by side if we're on the lucky number:
@@ -141,4 +137,11 @@ function ErrorBarsHandle = errorbarOnBarPlot(BarHeights , BarHeightsError , BarP
         
         ErrorBarsHandle{i} = ErrorBarH;
     end
+end
+
+function Data = DataStruct()
+    Data = struct();
+    Data.day_3 = coating_struct();
+    Data.day_5 = coating_struct();
+    Data.day_7 = coating_struct();
 end
