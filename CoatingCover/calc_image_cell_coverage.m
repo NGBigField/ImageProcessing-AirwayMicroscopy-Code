@@ -44,10 +44,20 @@ function [Smoothed_binary_image , gray_image] = segment_coating_image(original_i
     %thresholding:
     binary_image = gray_image > most_dark_grey_level;
     
+    binary_image = DensityWindowFilter( binary_image , Config.DensityWindowFilter );
+    
     % Grain Filtering - Black:
-    filttered_binary_image  = ~bwpropfilt(~binary_image,           "Area" , [Config.GrainFiltering_BlackArea  , inf] , 4);
+    if ~isempty(Config.GrainFiltering_BlackArea)
+        filttered_binary_image  = ~bwpropfilt(~binary_image,           "Area" , [Config.GrainFiltering_BlackArea  , inf] , 4);
+    else
+        filttered_binary_image  = binary_image;
+    end
     % Grain Filtering - White:
-    filttered_binary_image2 =  bwpropfilt( filttered_binary_image, "Area" , [Config.GrainFiltering_WhiteArea  , inf] , 4);
+    if ~isempty(Config.GrainFiltering_WhiteArea )
+        filttered_binary_image2 =  bwpropfilt( filttered_binary_image, "Area" , [Config.GrainFiltering_WhiteArea  , inf] , 4);
+    else
+        filttered_binary_image2 = filttered_binary_image;
+    end
 
     % Smoothing:
     if ~isempty(Config.Smoothing_SERadius)        

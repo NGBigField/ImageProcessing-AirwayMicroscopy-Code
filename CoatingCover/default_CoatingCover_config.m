@@ -20,6 +20,13 @@ function [Config , Params ] = default_cell_cover_config(ImageType)
     
     Config.Smoothing_SERadius = 3;
     
+    %% Config.DensityWindowFilter 
+    Config.DensityWindowFilter = struct();
+    Config.DensityWindowFilter.isOn                    = true;
+    Config.DensityWindowFilter.DensityWindowSize       = 5 ;
+    Config.DensityWindowFilter.DensityPercentThreshold = 50 ;
+    Config.DensityWindowFilter.BoundaryPolicy          = "White" ;    % ["symmetric","replicate","circular","Black","White"]
+    
     
     %% Params
     Params = struct();
