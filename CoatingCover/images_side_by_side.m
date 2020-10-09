@@ -37,5 +37,6 @@ function [FigH] = images_side_by_side( ImCell, TitleStrArray )
         sbpltHandleArray(i).Position(3) =   1  /NumIm;
     end
     
+    drawnow
     
 end

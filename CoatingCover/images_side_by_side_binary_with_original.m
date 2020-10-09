@@ -14,7 +14,7 @@ function [] = images_side_by_side_binary_with_original( Original_Im,BW_Im , Imag
     end % switch    
         
     
-    [FigH] = images_side_by_side(Original_Im, BW_Im);
+    [FigH] = images_side_by_side({Original_Im, BW_Im} , ["Original" , "Segmented"]  );
 
     
     DayAndTypeString = dayStruct.Name + " - Coating Type  " + coatingTypeStruct.Name;
@@ -23,13 +23,13 @@ function [] = images_side_by_side_binary_with_original( Original_Im,BW_Im , Imag
     
     FigH.Name   = DayAndTypeString;
     
-    DetalisText = DayAndTypeString + "  - Image "+ ImageString + newline + CoverageString;
-    TitleText = text( 0 , 0 , DetalisText);    
-    TitleText.Units = 'normalized';
-    TitleText.Position = [-1/2 , 1.2 , 0];
-    TitleText.FontSize = 13;
-    TitleText.Interpreter = 'none';
-    
+%     DetalisText = DayAndTypeString + "  - Image "+ ImageString + newline + CoverageString;
+%     TitleText = text( 0 , 0 , DetalisText);    
+%     TitleText.Units = 'normalized';
+%     TitleText.Position = [-1/2 , 1.2 , 0];
+%     TitleText.FontSize = 13;
+%     TitleText.Interpreter = 'none';
+%     
 
     % Save:
     if isfield(Settings , "isJustShow") && Settings.isJustShow
@@ -40,7 +40,7 @@ function [] = images_side_by_side_binary_with_original( Original_Im,BW_Im , Imag
         saveas(FigH,saveFullPath)
     end
     
-    impixelinfo
+
     
 
 end % imiges_side_by_side_binary_with_original

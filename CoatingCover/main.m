@@ -10,6 +10,11 @@ Settings.isShowMontage = true;
 Settings.howManyImages2Save = "1 per type per day" ; % "All"/"1 per type per day"/"Only first Image";
 
 
+Config.EdgeDetection.isHistEqualization = false;
+Config.EdgeDetection.cannyLow   = 0.05;
+Config.EdgeDetection.cannyHigh  = 0.15;
+
+
 % for each day:
 for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
     dayStruct = Paths.CoatingDirectory.(Paths.CoatingDirectory.subDirectories{dayIndex});
@@ -30,7 +35,7 @@ for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
             % save Data:
             Data.(dayStruct.key).(coatingTypeStruct.key) = [ Data.(dayStruct.key).(coatingTypeStruct.key)  , cell_coverage];
             % Plot images side by side if we're on the lucky number:
-            imiges_side_by_side_binary_with_original(Im,binary_image,imIndex,ImageIndex2ShowAndSave,  coatingTypeStruct , dayStruct , cell_coverage , Paths , Settings);
+            images_side_by_side_binary_with_original(Im,binary_image,imIndex,ImageIndex2ShowAndSave,  coatingTypeStruct , dayStruct , cell_coverage , Paths , Settings);
             
             
         end % imIndex
@@ -52,6 +57,12 @@ FigH = figure();
 BarPlotHandle   = bar(BarHeights);
 pretty_plot(BarPlotHandle );
 ErrorBarsHandle = errorbarOnBarPlot(BarHeights , BarHeightsError_Postive , BarHeightsError_Negative , BarPlotHandle);
+
+% Save Bar Graph
+saveFolder   = Paths.Results.Coating.OurResults.Path;
+saveFullPath = saveFolder + filesep + "Bar Graph " + string(date) + ".svg";
+saveas(FigH,saveFullPath)
+
 
 disp("Finsih");
 

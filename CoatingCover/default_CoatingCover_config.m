@@ -31,6 +31,15 @@ function [Config , Params ] = default_cell_cover_config(ImageType)
     Config.DensityWindowFilter.BoundaryPolicy          = "White" ;    % ["symmetric","replicate","circular","Black","White"]
     
     
+    %% Config.EdgeDetection:
+    Config.EdgeDetection = struct();
+    Config.EdgeDetection.isOn= true;
+    Config.EdgeDetection.close_SERadius = 15;
+    Config.EdgeDetection.isHistEqualization = true;
+    Config.EdgeDetection.cannyLow  = 0.24 ;  
+    Config.EdgeDetection.cannyHigh = 0.61 ;
+    
+    
     %% Params
     Params = struct();
     Params.isShowMontage = false;

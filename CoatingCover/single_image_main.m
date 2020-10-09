@@ -4,10 +4,10 @@ Paths = PathsClass( string(pwd) , "search" );
 
 % Paths = PathsClass( string(pwd) , "given", "C:\Users\tarama\Technion\Image Processing - Airway Microscopy - General\Data" );
 %% Load Settings:
-% ImPath = Paths.ImagesForComparison.Coating ;
+ImPath = Paths.ImagesForComparison.Coating ;
 % ImPath = Paths.AllDirectories.SuperDirectory4 + filesep + "day 3" + filesep + "C+F" + filesep + "CALU_DAY3_E6_4.tif";  
 % ImPath = Paths.AllDirectories.SuperDirectory4 + filesep + "day 5\None\none_C5_day 5_1.tif";
-ImPath = "C:\Users\NGBig\Technion\Image processing for in vitro airway model microscopy - General\Data\4th set - Coatings\day 3\FBS\CALU_C4_FBS_DAY 3_2.tif" ;
+% ImPath = "C:\Users\NGBig\Technion\Image processing for in vitro airway model microscopy - General\Data\4th set - Coatings\day 3\FBS\CALU_C4_FBS_DAY 3_2.tif" ;
 
 Im = imread(ImPath);
 
@@ -15,19 +15,31 @@ ImageIndex         = Paths.ImagesForComparison.info.Coating.ImageIndex;
 coatingTypeStruct  = Paths.ImagesForComparison.info.Coating.coatingTypeStruct;
 dayStruct          = Paths.ImagesForComparison.info.Coating.dayStruct;
 
-Settings = struct();
-Settings.howManyImages2Save = "All" ; % "All"/"1 per type per day"/"Only first Image";
-Settings.isJustShow = true;
-
 %% Find intiall masks:
-[Config , Params ] = default_CoatingCover_config("Coating");
+[Config , Settings ] = default_CoatingCover_config("Coating");
 Config.Smoothing_SERadius = [];
 Config.isHistEqualization = false;
 Config.ThreshouldingGrayLevel = 4;
 
-Params.isShowMontage = true;
+Config.EdgeDetection.isHistEqualization = false;
+Config.EdgeDetection.cannyLow   = 0.05;
+Config.EdgeDetection.cannyHigh  = 0.15;
 
-[ cell_coverage , binary_image ] =  calc_image_cell_coverage(Im , Config , Params);
+
+Settings.isShowMontage = true;
+
+ConfigVec = [ 10 ];
+
+
+
+for i = 1 : length(ConfigVec)
+    Config.EdgeDetection.close_SERadius = ConfigVec(i);
+    [binary_image_edge_smoothed          , ~ , gray_image , FigH]    = segment_coating_image_edgeDetection(        Im , Config , Settings);
+    FigH.Name = "close_SERadius = " + string(ConfigVec(i));
+end
+
+
+% [ cell_coverage , binary_image ] =  calc_image_cell_coverage(Im , Config , Params);
 
 
 
