@@ -47,15 +47,16 @@ if ~exist("Data" , "var")
    load(saveFolder+filesep+"Data");
 end
 
-[BarHeights , BarHeightsError] = computeMeanValuesFromData(Data);  
+[BarHeights , BarHeightsError_Postive , BarHeightsError_Negative ]  = computeMeanValuesFromData(Data);  
 FigH = figure();
 BarPlotHandle   = bar(BarHeights);
 pretty_plot(BarPlotHandle );
-ErrorBarsHandle = errorbarOnBarPlot(BarHeights , BarHeightsError , BarPlotHandle);
+ErrorBarsHandle = errorbarOnBarPlot(BarHeights , BarHeightsError_Postive , BarHeightsError_Negative , BarPlotHandle);
 
-
-%%
 disp("Finsih");
+
+%% Finish
+
 
 
 
@@ -70,10 +71,12 @@ function res =  coating_struct()
 
 end
 
-function [BarHeights , BarHeightsError ] = computeMeanValuesFromData(Data)
+function [BarHeights , BarHeightsError_Postive , BarHeightsError_Negative ] = computeMeanValuesFromData(Data)
 
-    BarHeights      = zeros(4,3);
-    BarHeightsError = zeros(4,3);
+    BarHeights               = zeros(4,3);
+    BarHeightsError_Postive  = zeros(4,3);
+    BarHeightsError_Negative = zeros(4,3);
+    
     
     i=0;
     for coatingType = ["C" , "C_F" , "FBS" , "None" ]
@@ -81,8 +84,10 @@ function [BarHeights , BarHeightsError ] = computeMeanValuesFromData(Data)
         j=0;
         for day = ["day_3" , "day_5" , "day_7"]
             j = j + 1;
-            BarHeights(i,j)      = mean( Data.(day).(coatingType) );
-            BarHeightsError(i,j) = std(  Data.(day).(coatingType) );
+            currentData = Data.(day).(coatingType);
+            BarHeights(i,j)               = mean( currentData );
+            BarHeightsError_Postive(i,j)  = std(  currentData( currentData >= mean( currentData ) ) );
+            BarHeightsError_Negative(i,j) = std(  currentData( currentData <  mean( currentData ) ) );
         end
     end
 
@@ -102,13 +107,16 @@ function [] = pretty_plot(BarPlotHandle)
     Axis = BarPlotHandle.Parent;
     Axis.XTickLabel = ["C" , "C+F" , "FBS" , "None" ];
     Axis.XAxis.FontSize = 16;
+    Axis.YLim = [0,120];
     
+    YlineH = yline(100);
+    YlineH.LineStyle = '--';
+    YlineH.Annotation.LegendInformation.IconDisplayStyle = 'off';
     
     grid on
     
     
-    ylabel(Axis , "Cell Cover Percentage $$ [\%] $$" , 'Interpreter' ,'latex' , 'FontSize' , 16 , 'FontWeight' ,'bold')
-    ylim(Axis , [0,100])
+    ylabel(Axis , "Cell Cover Percentage $$ [\%] $$" , 'Interpreter' ,'latex' , 'FontSize' , 20 , 'FontWeight' ,'bold')
     
     % Error bars:
 
@@ -116,7 +124,7 @@ function [] = pretty_plot(BarPlotHandle)
 
 end % pretty_plot
 
-function ErrorBarsHandle = errorbarOnBarPlot(BarHeights , BarHeightsError , BarPlotHandle)
+function ErrorBarsHandle = errorbarOnBarPlot(BarHeights , BarHeightsError_Postive , BarHeightsError_Negative , BarPlotHandle)
     
     AxisH = BarPlotHandle.Parent;
     AxisH.XTick
@@ -128,7 +136,7 @@ function ErrorBarsHandle = errorbarOnBarPlot(BarHeights , BarHeightsError , BarP
     ErrorBarsHandle = cell(1,3);
     for i = 1 : 3
         hold on
-        ErrorBarH = errorbar( x_vec{i}  , BarHeights(:,i) , BarHeightsError(:,i) );
+        ErrorBarH = errorbar( x_vec{i}  , BarHeights(:,i) , BarHeightsError_Negative(:,i) , BarHeightsError_Postive(:,i)  );
         ErrorBarH.LineStyle = 'none';
         ErrorBarH.Color = 'k';
         ErrorBarH.CapSize = 10;
