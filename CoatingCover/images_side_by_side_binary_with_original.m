@@ -36,7 +36,7 @@ function [] = images_side_by_side_binary_with_original( Original_Im,BW_Im , Imag
         % Don't save
     else
         saveFolder   = Paths.Results.Coating.OurResults.SegmentationImages.Path;
-        saveFullPath = saveFolder + filesep + DayAndTypeString + ".tif";
+        saveFullPath = saveFolder + filesep + DayAndTypeString + " " + string(date) + ".tif";
         saveas(FigH,saveFullPath)
     end
     
