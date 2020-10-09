@@ -4,8 +4,12 @@ Paths = PathsClass( string(pwd) , "search" );
 
 % Paths = PathsClass( string(pwd) , "given", "C:\Users\tarama\Technion\Image Processing - Airway Microscopy - General\Data" );
 %% Load Settings:
-% Im = imread( Paths.ImagesForComparison.Coating );
-Im = imread( Paths.AllDirectories.SuperDirectory4 + filesep + "day 3" + filesep + "C+F" + filesep + "CALU_DAY3_E6_4.tif");
+% ImPath = Paths.ImagesForComparison.Coating ;
+% ImPath = Paths.AllDirectories.SuperDirectory4 + filesep + "day 3" + filesep + "C+F" + filesep + "CALU_DAY3_E6_4.tif";  
+% ImPath = Paths.AllDirectories.SuperDirectory4 + filesep + "day 5\None\none_C5_day 5_1.tif";
+ImPath = "C:\Users\NGBig\Technion\Image processing for in vitro airway model microscopy - General\Data\4th set - Coatings\day 3\FBS\CALU_C4_FBS_DAY 3_2.tif" ;
+
+Im = imread(ImPath);
 
 ImageIndex         = Paths.ImagesForComparison.info.Coating.ImageIndex;
 coatingTypeStruct  = Paths.ImagesForComparison.info.Coating.coatingTypeStruct;
@@ -17,6 +21,10 @@ Settings.isJustShow = true;
 
 %% Find intiall masks:
 [Config , Params ] = default_CoatingCover_config("Coating");
+Config.Smoothing_SERadius = [];
+Config.isHistEqualization = false;
+Config.ThreshouldingGrayLevel = 4;
+
 Params.isShowMontage = true;
 
 [ cell_coverage , binary_image ] =  calc_image_cell_coverage(Im , Config , Params);

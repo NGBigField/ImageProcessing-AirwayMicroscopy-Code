@@ -1,4 +1,4 @@
-function [] = imiges_side_by_side_binary_with_original( Original_Im,BW_Im , ImageIndex , ImageIndex2Show , coatingTypeStruct , dayStruct , cell_coverage , Paths , Settings )
+function [] = images_side_by_side_binary_with_original( Original_Im,BW_Im , ImageIndex , ImageIndex2Show , coatingTypeStruct , dayStruct , cell_coverage , Paths , Settings )
 
     switch Settings.howManyImages2Save
         case "All"
@@ -13,29 +13,9 @@ function [] = imiges_side_by_side_binary_with_original( Original_Im,BW_Im , Imag
             error("None such option");
     end % switch    
         
+    
+    [FigH] = images_side_by_side(Original_Im, BW_Im);
 
-    FigH = figure();
-    % Adjust window size:
-    FigH.Position(4) = FigH.Position(4)*1.2;
-    FigH.Position(2) = FigH.Position(2)*0.5;
-    
-    
-    sbpltH1 = subplot(1,2,1);
-    imshow(Original_Im)
-    title("Original Image")
-    sbpltH2 = subplot(1,2,2);    
-    imshow(BW_Im)
-    title("Binary Segmentation")
-    
-    % axes move together:
-    linkaxes([sbpltH1 , sbpltH2 ])
-    
-    sbpltH1.Position(1) = 0;
-    sbpltH2.Position(1) = (1/2)*1;
-    sbpltH1.Position(3) = (1/2)*1;
-    sbpltH2.Position(3) = (1/2)*1;
-    
- 
     
     DayAndTypeString = dayStruct.Name + " - Coating Type  " + coatingTypeStruct.Name;
     [~ , ImageString , ~ ]      = fileparts( coatingTypeStruct.Images{ImageIndex} );

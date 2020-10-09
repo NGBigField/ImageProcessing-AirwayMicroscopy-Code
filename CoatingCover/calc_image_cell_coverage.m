@@ -21,8 +21,24 @@ end % function calc_image_cell_coverage
 
 
 %% sub functions:
-function [Smoothed_binary_image , gray_image] = segment_coating_image(original_image , Config , Settings)
+function [binary_image_edge , gray_image]  = segment_coating_image(Original_Image , Config , Settings)
 
+    [ binary_image_edge , gray_image]           = segment_coating_image_edgeDetection(        Original_Image , Config , Settings);
+    [binary_image_thresholding_smoothed, ~ , ~] = segment_coating_image_grayLevelThresholding(Original_Image , Config , Settings);
+    
+    
+    ImCell     = {Original_Image , binary_image_edge, binary_image_thresholding_smoothed} ;
+    TitleArray = ["Original Image" ,"Edge" , "Thresholding"] ;
+    FigH = images_side_by_side( ImCell , TitleArray );
+    
+    disp("Done");
+end
+
+
+
+
+function  [BW1 , gray_image] = segment_coating_image_edgeDetection(original_image , Config , Settings)
+      
     %get grey image:
     gray_image = rgb2gray(original_image);
     %Subtract background:
@@ -31,6 +47,50 @@ function [Smoothed_binary_image , gray_image] = segment_coating_image(original_i
     end
     %histogram equalization:
     gray_image = histeq(gray_image);
+
+    %%    
+    BW1 = edge(gray_image,'canny' , [ 0.24 ,  0.61 ]);   %  'canny',[low high] where:  0 < low < high < 1 ;
+    
+%     FigH = images_side_by_side(original_image, BW1);
+  
+    return
+    %%
+%     BW2 = bwpropfilt(BW1 ,"Area" ,[50 inf]);
+%     figure()
+%     imshow(BW2)
+%     
+    
+    SE = strel('disk' , 4 , 0);
+    BW_test1 = imdilate(BW1,SE);
+
+    
+    BW_test2 = bwpropfilt(BW_test1 ,"EulerNumber" ,[-inf  0]);
+
+    
+    BW_test3 = imerode(BW_test2,SE);
+
+    
+    SE = strel('disk' , 10 , 0);
+    BW_test4 = imclose(BW_test3 , SE);
+
+    
+    BW_test5 = ~bwpropfilt(~BW_test4 ,"Area" ,[2000  inf]);
+    figure()
+    imshow(BW_test5)
+end
+
+function [Smoothed_binary_image , binary_image , gray_image] = segment_coating_image_grayLevelThresholding(original_image , Config , Settings)
+
+    %get grey image:
+    gray_image = rgb2gray(original_image);
+    %Subtract background:
+    if ~isempty(Config.SubstructBackground_SERadius)
+        gray_image = image_substruct_background(gray_image , Config.SubstructBackground_SERadius);
+    end
+    %histogram equalization:
+    if Config.isHistEqualization        
+        gray_image = histeq(gray_image);
+    end
     % Get the Gray Value of the  <x> [%] darkest pixels:
     
     if ~isempty(Config.ThreshouldingGrayPercent) && isempty(Config.ThreshouldingGrayLevel)
@@ -44,7 +104,8 @@ function [Smoothed_binary_image , gray_image] = segment_coating_image(original_i
     %thresholding:
     binary_image = gray_image > most_dark_grey_level;
     
-    binary_image = DensityWindowFilter( binary_image , Config.DensityWindowFilter );
+   
+%     binary_image = DensityWindowFilter( binary_image , Config.DensityWindowFilter );
     
     % Grain Filtering - Black:
     if ~isempty(Config.GrainFiltering_BlackArea)
@@ -69,50 +130,10 @@ function [Smoothed_binary_image , gray_image] = segment_coating_image(original_i
     
     if Settings.isShowMontage
         figure();
-        montage({original_image , gray_image , binary_image, filttered_binary_image , filttered_binary_image2 , Smoothed_binary_image});
+        MontageG = montage({original_image , gray_image , binary_image, filttered_binary_image , filttered_binary_image2 , Smoothed_binary_image});
+        pretty_montage( MontageG );
         impixelinfo
     end
-
-    
-    return
-    %%
-    %{
-    
-    figure()
-    imshow(original_image)
-    
-    
-    %}
-    %%
-    figure()
-    imshow(original_image)
-
-    BW1 = edge(gray_image,'canny' , 0.6);
-    figure()
-    imshow(BW1)
-
-%     BW2 = bwpropfilt(BW1 ,"Area" ,[50 inf]);
-%     figure()
-%     imshow(BW2)
-%     
-    
-    SE = strel('disk' , 4 , 0);
-    BW_test1 = imdilate(BW1,SE);
-
-    
-    BW_test2 = bwpropfilt(BW_test1 ,"EulerNumber" ,[-inf  0]);
-
-    
-    BW_test3 = imerode(BW_test2,SE);
-
-    
-    SE = strel('disk' , 10 , 0);
-    BW_test4 = imclose(BW_test3 , SE);
-
-    
-    BW_test5 = ~bwpropfilt(~BW_test4 ,"Area" ,[2000  inf]);
-    figure()
-    imshow(BW_test5)   
 
 
 end
@@ -147,4 +168,17 @@ function most_dark_grey_level = most_x_percent_darkest_level(x , gray_image)
     end
 
     most_dark_grey_level = binLocationIdx;
+end
+
+function pretty_montage( MontageG )
+
+    return
+    disp(0);
+    Axis = MontageG.Parent;
+    Axis.XAxis.TickValues = 1:7;
+    Axis.XAxis.TickLabelsMode = 'manual';
+    Axis.XAxis.TickLabels{2} = "Test1"
+    Axis.Visible = 'on';
+    
+
 end

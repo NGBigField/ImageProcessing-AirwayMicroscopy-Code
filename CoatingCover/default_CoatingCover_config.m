@@ -7,10 +7,13 @@ function [Config , Params ] = default_cell_cover_config(ImageType)
     Config = struct();
     Config.ImageType = ImageType;
     
+    Config.isHistEqualization = true;
+    
     Config.SubstructBackground_SERadius = 2;
     
     Config.ThreshouldingGrayPercent =  [] ; % 35 is good.   in range [0 100]
     Config.ThreshouldingGrayLevel    = 85; % in range [0 to 255]
+%     Config.ThreshouldingGrayLevel    = 5; % in range [0 to 255]
     
     Config.MaxWindowRadius = [] ; % set to zero to not-use
     
