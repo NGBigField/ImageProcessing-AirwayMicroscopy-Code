@@ -28,10 +28,11 @@ function  [Smoothed_BW , BW1 , gray_image , FigH] = segment_coating_image_edgeDe
     
     
     if Settings.isShowMontage
-        ImCell = {original_image , gray_image , histeq(gray_image) , BW1, BW2} ;
+        ImCell      = {original_image , gray_image , histeq(gray_image) , BW1, BW2} ;
         TitlesArray = ["Original" , "Gray" , "Histogram Equalization", "BW1" , "BW2 = Closed BW1"];
-%         FigH = LinkedMontage( ImCell , TitlesArray );
-        FigH = LinkedMontage( ImCell );
+        
+        FigH = figure();
+        [a , b] = LinkedMontage( ImCell , TitlesArray , "Size" , [2 inf ] , "FigureHandle" , FigH );
         FigH.Name = "Gray Level Thresholding";
     end
     

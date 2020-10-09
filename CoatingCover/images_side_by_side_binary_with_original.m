@@ -14,7 +14,7 @@ function [] = images_side_by_side_binary_with_original( Original_Im,BW_Im , Imag
     end % switch    
         
     
-    [FigH] = images_side_by_side({Original_Im, BW_Im} , ["Original" , "Segmented"]  );
+    [FigH] = LinkedMontage({Original_Im, BW_Im} , ["Original" , "Segmented"]  );
 
     
     DayAndTypeString = dayStruct.Name + " - Coating Type  " + coatingTypeStruct.Name;
