@@ -12,31 +12,47 @@ function [] = images_side_by_side_binary_with_original( Original_Im,BW_Im , Imag
         otherwise
             error("None such option");
     end % switch    
-        
     
-    [FigH] = LinkedMontage({Original_Im, BW_Im} , ["Original" , "Segmented"]  );
-
-    
+    % Texts:
     DayAndTypeString = dayStruct.Name + " - Coating Type  " + coatingTypeStruct.Name;
     [~ , ImageString , ~ ]      = fileparts( coatingTypeStruct.Images{ImageIndex} );
     CoverageString   = "Cell Coverage = " + string(cell_coverage) + " [%]";
+    DetailsText = DayAndTypeString + "  - Image "+ ImageString + newline + CoverageString;
     
-    FigH.Name   = DayAndTypeString;
     
-%     DetalisText = DayAndTypeString + "  - Image "+ ImageString + newline + CoverageString;
-%     TitleText = text( 0 , 0 , DetalisText);    
-%     TitleText.Units = 'normalized';
-%     TitleText.Position = [-1/2 , 1.2 , 0];
-%     TitleText.FontSize = 13;
-%     TitleText.Interpreter = 'none';
-%     
-
+    FigH = figure();
+    
+    isTryAgain = true;
+    while isTryAgain
+        
+        % Our Unique LinkedMontage function:
+        
+        [ subPlotsH, options] = LinkedMontage( {Original_Im, BW_Im} , ["Original" , "Segmented"] , ...
+                                                "Layout",       [1,nan], ...
+                                                "FigureHandle", FigH );
+        if any(subPlotsH(2).Position(3:4) ~= subPlotsH(1).Position(3:4))
+            continue
+        else
+            isTryAgain = false;
+        end        
+        
+        FigH = options.FigureHandle;
+        FigH.Name   = DayAndTypeString;
+        TitleH = sgtitle(options.FigureHandle, DetailsText);
+        TitleH.Interpreter = 'none';
+        TitleH.FontSize = 16;
+        
+        subPlotsH(1).Title.FontSize = 14;
+        subPlotsH(2).Title.FontSize = 14;
+              
+    end %  while isTryAgain
+    
     % Save:
     if isfield(Settings , "isJustShow") && Settings.isJustShow
         % Don't save
     else
         saveFolder   = Paths.Results.Coating.OurResults.SegmentationImages.Path;
-        saveFullPath = saveFolder + filesep + DayAndTypeString + " " + string(date) + ".tif";
+        saveFullPath = saveFolder + filesep + DayAndTypeString  + ".tif";
         saveas(FigH,saveFullPath)
     end
     

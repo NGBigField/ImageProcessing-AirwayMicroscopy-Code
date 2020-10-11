@@ -6,7 +6,7 @@ Paths = PathsClass( string(pwd) , "search" );
 Data = DataStruct();
 
 [Config , Settings ] = default_CoatingCover_config("Coating");
-Settings.isShowMontage = true;
+Settings.isShowMontage = false;
 Settings.howManyImages2Save = "1 per type per day" ; % "All"/"1 per type per day"/"Only first Image";
 
 
