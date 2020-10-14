@@ -1,43 +1,66 @@
-function  [Smoothed_BW , BW1 , gray_image , FigH] = segment_coating_image_edgeDetection(original_image , Config , Settings)
+function  [Smoothed_BW , BW1 , grayIm , FigH] = segment_coating_image_edgeDetection(original_image , Config , Settings)
       
     %get grey image:
-    gray_image = rgb2gray(original_image);
+    grayIm = rgb2gray(original_image);
     %Subtract background:
     if ~isempty(Config.SubstructBackground_SERadius)
-        gray_image = image_substruct_background(gray_image , Config.SubstructBackground_SERadius);
+        grayIm = image_substruct_background(grayIm , Config.SubstructBackground_SERadius);
     end
     %histogram equalization:
     if Config.EdgeDetection.isHistEqualization
-        gray_image = histeq(gray_image);
+        grayIm = histeq(grayIm);
     end
 
     %%    
     CannyLow  = Config.EdgeDetection.cannyLow;
     CannyHigh = Config.EdgeDetection.cannyHigh;
-    BW1 = edge(gray_image,'canny' , [ CannyLow ,  CannyHigh ]);   %  'canny',[low high] where:  0 < low < high < 1 ;
+    CannyIm = edge(grayIm,'canny' , [ CannyLow ,  CannyHigh ]);   %  'canny',[low high] where:  0 < low < high < 1 ;
     
+    smallCloseRadius= 3;
+    SE = strel('disk', smallCloseRadius );
+    smallClosedCannyIm = imclose( CannyIm , SE );    
+        
     
     % Close:
-    if ~isempty(Config.EdgeDetection.close_SERadius)        
+    % bigCloseRadius = Config.EdgeDetection.close_SERadius;
+    bigCloseRadius = 15;
+    if ~isempty(bigCloseRadius)             
         SE = strel('disk', Config.EdgeDetection.close_SERadius );
-        BW2   = imclose( BW1 , SE );
+        bigClosedCannyIm   = imclose( CannyIm , SE );
     else
-        BW2 = BW1;
+        bigClosedCannyIm = CannyIm;
     end
     
+    ExpansionFromSmallToBig = bigClosedCannyIm-smallClosedCannyIm;
     
+    [Gmag,Gdir] = imgradient(grayIm,'sobel');
+    Gmag = Gmag/max(Gmag,[],'all');
+    histeq_im = histeq(grayIm);
+%     blended_im = imshowpair(CannyIm, histeq_im); 
     
+    grayThreshold = 10;
+    GrayLevelThresholding = grayIm > grayThreshold ;
+    
+    SE = strel('disk', 3 );
+    closedThresholding = imclose( GrayLevelThresholding , SE );      
+    
+    %see where gray levels and close expansion agree:
+    AgreementIm = closedThresholding & ExpansionFromSmallToBig;
+    
+    CannyExpandedWithGrayAgreement = smallClosedCannyIm | AgreementIm;
+    
+    %%
     if Settings.isShowMontage
-        ImCell      = {original_image , gray_image , histeq(gray_image) , BW1, BW2} ;
-        TitlesArray = ["Original" , "Gray" , "Histogram Equalization", "BW1" , "BW2 = Closed BW1"];
+        ImCell      = {original_image ,  histeq_im               , Gmag                    , CannyIm ,  smallClosedCannyIm                                         ,  bigClosedCannyIm                                        , ExpansionFromSmallToBig   , GrayLevelThresholding  , closedThresholding   , AgreementIm                                          , CannyExpandedWithGrayAgreement};
+        TitlesArray = ["Original"     , "Histogram Equalization" , "Gmag = sobel magnitude", "Canny" , "Closed canny"+newline+ "radius="+string(smallCloseRadius)  , "Closed canny"+newline+ "radius="+string(bigCloseRadius) , "Close Expansion"         , "Gray Thresholding"    , "closedThresholding" , "Agreement between Close Expansion And Thresholding" , "Expansion with Gray Agreement"];
         
         FigH = figure();
-        [a , b] = LinkedMontage( ImCell , TitlesArray , "Size" , [2 inf ] , "FigureHandle" , FigH );
-        FigH.Name = "Gray Level Thresholding";
+        [a , b] = LinkedMontage( ImCell , TitlesArray , "Layout" , [3 inf ] , "FigureHandle" , FigH , "ImageRelativeSize", 0.9);
+        FigH.Name = "Montage";
     end
     
-    
-    Smoothed_BW = BW2;
+    %%
+    Smoothed_BW = bigClosedCannyIm;
     
     
 end

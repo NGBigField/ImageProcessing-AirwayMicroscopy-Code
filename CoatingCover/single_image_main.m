@@ -1,13 +1,17 @@
 close all; clearvars ; clc;  
 add_app_paths(pwd);
-Paths = PathsClass( string(pwd) , "search" );
+%Paths = PathsClass( string(pwd) , "search" );
 
-% Paths = PathsClass( string(pwd) , "given", "C:\Users\tarama\Technion\Image Processing - Airway Microscopy - General\Data" );
+Paths = PathsClass( string(pwd) , "given", "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data" );
 %% Load Settings:
-ImPath = Paths.ImagesForComparison.Coating ;
+% ImPath = Paths.ImagesForComparison.Coating ;
 % ImPath = Paths.AllDirectories.SuperDirectory4 + filesep + "day 3" + filesep + "C+F" + filesep + "CALU_DAY3_E6_4.tif";  
 % ImPath = Paths.AllDirectories.SuperDirectory4 + filesep + "day 5\None\none_C5_day 5_1.tif";
 % ImPath = "C:\Users\NGBig\Technion\Image processing for in vitro airway model microscopy - General\Data\4th set - Coatings\day 3\FBS\CALU_C4_FBS_DAY 3_2.tif" ;
+% ImPath = "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data\4th set - Coatings\day 3\FBS\CALU_e4_FBS_DAY 3_4.tif" ;
+% ImPath = "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data\4th set - Coatings\day 5\C\COLLAGEN_DAY5_D5_2.tif";
+ImPath = "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data\4th set - Coatings\day 3\C\CALU_DAY3_e5_4.tif"
+
 
 Im = imread(ImPath);
 

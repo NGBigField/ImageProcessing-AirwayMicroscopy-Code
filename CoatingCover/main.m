@@ -1,7 +1,7 @@
 close all; clearvars ; clc;  
 add_app_paths(pwd);
-Paths = PathsClass( string(pwd) , "search" );
-
+%Paths = PathsClass( string(pwd) , "search" );
+Paths = PathsClass( string(pwd) , "given", "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data" );
 %% Go over all Coating:
 Data = DataStruct();
 
