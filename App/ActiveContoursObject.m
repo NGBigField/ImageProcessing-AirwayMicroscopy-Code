@@ -1,4 +1,3 @@
-%%
 classdef ActiveContoursObject < handle
     
     properties (Access = private)

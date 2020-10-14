@@ -1,6 +1,6 @@
 function [Params] = default_params( ImageType )
     arguments
-        ImageType string = "Unkown";
+        ImageType string {mustBeMember(ImageType,["Unkown" "Red" "Natural" "Flask" "Coating"])} = "Unkown";
     end
     
     Params = struct();
@@ -49,8 +49,10 @@ function [Params] = default_params( ImageType )
            
        case "Flask"
            return
+       case "Coating"
+           return
        otherwise
-           
+           error("Not a legit Type")
    end % switch
    
 end % function
