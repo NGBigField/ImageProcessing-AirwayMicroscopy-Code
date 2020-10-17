@@ -68,5 +68,4 @@ function [Config , Settings ] = default_cell_cover_config(ImageType)
             error("No such type")
            
    end % switch
-
 end % default_CoatingCover_config

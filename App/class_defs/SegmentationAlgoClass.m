@@ -6,13 +6,13 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
     properties
         Params = default_params();
 
-        Masks_cell = {}  % the thing that we're looking for. Each mask in the cell array is for a seperate ROI and finally for a seperate living/dead cell area.
+        Masks_cell  = {}  % the thing that we're looking for. Each mask in the cell array is for a seperate ROI and finally for a seperate living/dead cell area.
         Masks_Total = [];
         
         ImagesManager ImagesManagerClass   % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
         WindowsManager ; % Manges and controls all open apps and windows 
         
-        State  = AlgorithmStateEnum.Idle;
+        State AlgorithmStateEnum  = AlgorithmStateEnum.Idle;
     end
     
     methods (Access = public)
@@ -105,6 +105,9 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                     obj.start_Lankton();
                 case AvailableAlgorithms.Watershed
                     obj.start_Watershed();
+                case AvailableAlgorithms.CannyThresholdingFusion
+                    obj.start_CannyThresholdingFusion();
+                    
                 otherwise
                         error("Unkown AlgorithmFunction");
             end%switch
@@ -433,6 +436,9 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             obj.Masks_Total = FullResolutionTotalMask;
             
         end % start_Watershed
+        function [] = start_CannyThresholdingFusion(obj)
+            
+        end
     end %  (Access = protected)
     
 end % class
@@ -447,6 +453,8 @@ function [Method] = ChosenMethodEnumFromString(String)
             Method = AvailableAlgorithms.Lankton;
         case "Watershed"
             Method = AvailableAlgorithms.Watershed;
+        case "Canny Thresholding Fusion"
+            Method = AvailableAlgorithms.CannyThresholdingFusion;
         otherwise
             error("Unkown String");
     end

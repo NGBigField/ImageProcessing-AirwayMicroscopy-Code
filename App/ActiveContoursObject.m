@@ -34,35 +34,48 @@ classdef ActiveContoursObject < handle
             end           
             % check correct path and add to MATLAB'S paths:
             currentDir = string(currentDir);
-            [currentDir] = assert_correct_app_folder(obj , currentDir);
+            [currentDir] = assert_correct_app_folder(obj , currentDir , false);
             
             %Continue creating the app's Object/Class properties:
             obj.Paths = PathsClass( string(currentDir) ,"Search");
 %             app.Paths = PathsClass( "C:\Users\tarama\OneDrive - Intel Corporation\Desktop\???????\????? ?'\?????? ?\ImageProcessing-AirwayMicroscopy-Code\App" ,"given", "C:\Users\tarama\OneDrive - Intel Corporation\Desktop\???????\????? ?'\?????? ?\Data");
             obj.WindowsManager = WindowsManagerClass(obj , "object without app") ; % Manges and controls all open apps and windows
-            app.ImagesManager  = ImagesManagerClass(app.WindowsManager , app.ApearanceDefaultVals ) ;
-            app.SegmentAlgo    = SegmentationAlgoClass(app.ImagesManager , app.WindowsManager); 
-            app.ImagesManager.SegmentAlgo = app.SegmentAlgo; % let ImagesManager know about SegmentAlgo
-            app.EmbeddedProgressBar = EmbeddedProgressBar(app);
+            obj.ImagesManager  = ImagesManagerClass(obj.WindowsManager , obj.ApearanceDefaultVals ) ;
+            obj.SegmentAlgo    = SegmentationAlgoClass(obj.ImagesManager , obj.WindowsManager); 
+            obj.ImagesManager.SegmentAlgo = obj.SegmentAlgo; % let ImagesManager know about SegmentAlgo
+%             obj.EmbeddedProgressBar = EmbeddedProgressBar(obj);
             
             % Set App default values at loading:
-            app.set_default_values();
-            app.WindowsManager.set("Image2Show_color" , "Colored");
+            [Config] = default_params(  );
+%             obj.set_default_values();
+            obj.WindowsManager.set("Image2Show_color" , "Colored");
             
             %Take care of images:            
-            app.read_user_chosen_image();
+%             obj.read_user_chosen_image();
         end % function obj = ActiveContoursObject()
         
         
         
-        function wrong_folder_msg(obj , folder_that_should_exist)            
+        function wrong_folder_msg(obj , folder_that_should_exist , isErrorIfNotMainFolder)            
+            
+            arguments
+                obj ActiveContoursObject
+                folder_that_should_exist (:,1) string
+                isErrorIfNotMainFolder logical = true
+            end
+            
             ErrorMsg = "Object Loading Error: Object should run on its main folder with subfolders:";
             for i = 1 : length(folder_that_should_exist)
                 ErrorMsg = ErrorMsg + newline + "    - " + folder_that_should_exist(i);
-            end            
-            error(ErrorMsg); 
+            end
             
-        end
+            if isErrorIfNotMainFolder
+                error(ErrorMsg);
+            else
+                warning(ErrorMsg)
+            end
+            
+        end % wrong_folder_msg
         
     end %   methods (Access = public)
     

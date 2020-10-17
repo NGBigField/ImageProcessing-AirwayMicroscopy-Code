@@ -1,4 +1,10 @@
-function [currentDir] = assert_correct_app_folder( appOrObject , currentDir)
+function [currentDir] = assert_correct_app_folder( appOrObject , currentDir , isErrorIfNotMainFolder)
+
+    arguments
+       appOrObject
+       currentDir string
+       isErrorIfNotMainFolder logical = true
+    end
 
     folder_that_should_exist = [ "class_defs" , "app_functions"  ,"segmentation_functions"  ,"enumerations" ,"image_manipulations_functions"];
     is_exist_folder          = false(size(folder_that_should_exist));
@@ -36,6 +42,6 @@ function [currentDir] = assert_correct_app_folder( appOrObject , currentDir)
     end
 
     if ~all(is_exist_folder)
-        appOrObject.wrong_folder_msg(folder_that_should_exist)            
+        appOrObject.wrong_folder_msg(folder_that_should_exist, isErrorIfNotMainFolder)            
     end
 end % endd function
