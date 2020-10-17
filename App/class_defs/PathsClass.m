@@ -2,11 +2,16 @@ classdef  PathsClass
     
    properties
        CoatingDirectory
+       
        AllDirectories
+       DirectoryTree
+       
        AllPictures
        AvailablePictures
        ImagesForComparison
        Results
+       
+       
    end
     
    methods ( Access = public)
@@ -22,7 +27,7 @@ classdef  PathsClass
 
            arguments
                app_main_folder   string
-               method            string {mustBeMember(method,{'Relative','Search','Given','relative','search','given'})} = 'Relative'
+               method            string = "choose"
                given_data_folder string = string.empty()
            end
            
@@ -50,6 +55,15 @@ classdef  PathsClass
                    end
                case "relative"
                    DataDir = app_main_folder  + "\..\..\Data" ;
+               case "choose"
+                   Title = "Choose Main Data Folder:";
+                   res = uigetdir(app_main_folder,Title);
+                   if isnumeric(res) && res==0
+                       error("User Didn't choose the main Data Folder");
+                   else
+                       DataDir = string(res);
+                   end
+                   
                otherwise
                    error("Method input is wrong. See correct input");
            end % switch
@@ -59,6 +73,8 @@ classdef  PathsClass
            
            % complete all paths
            [ self.AllDirectories , self.AllPictures ] = get_all_paths(app_main_folder , DataDir);
+           
+           self.DirectoryTree = DirTreeClass(DataDir,true,"","Data Folder");
            
            % Coating Directory needs some specail attention:
            self.CoatingDirectory = organzie_CoatingDirectory_sub_dirs(self.AllDirectories.SuperDirectory4);
@@ -71,15 +87,15 @@ classdef  PathsClass
            
            %For easy use, seperate all good pictures that can be used.
            self.AvailablePictures = struct(); 
-           self.AvailablePictures.RedImage1 = self.AllPictures.RedlImage;
+           self.AvailablePictures.RedImage1     = self.AllPictures.RedlImage;
            self.AvailablePictures.NaturalImage1 = self.AllPictures.NaturalImage;
-           self.AvailablePictures.Brain =  self.AllPictures.Brain;
+           self.AvailablePictures.Coating       = self.CoatingDirectory.day_5.C_F.Images{1};
            
        end %Paths (c'tor)
        
 
         function cell_array = AvailablePictures_string_cell_array(self)    
-            cell_array = fieldnames( self.AvailablePictures);
+            cell_array = fieldnames( self.AvailablePictures );
         end
 
    end % methods
@@ -96,15 +112,14 @@ function [ Directories , Pictures] =  get_all_paths(CurrentDir , DataDir)
     Directories.CurrentDir = CurrentDir;
     Directories.DataDir = DataDir;
     
-    Pictures.Brain =  CurrentDir + filesep + "example_data"  + filesep +  "medtest"+".png" ;
     
-    Directories.SuperDirectory2_Before = DataDir + filesep + "2nd set - light"+ filesep +"BEFORE";
-    Directories.SuperDirectory2_After   = DataDir + filesep  + "2nd set - light"+ filesep +"AFTER"  ;    
+    Directories.SuperDirectory1 = DataDir + filesep + "1st set - Red";
+    Pictures.RedlImage =  Directories.SuperDirectory1 + filesep +  "2 - no segmentation"+".png" ;
+    
+    Directories.SuperDirectory2_Before = DataDir + filesep + "2nd set - Natural Light" + filesep +"BEFORE";
+    Directories.SuperDirectory2_After  = DataDir + filesep + "2nd set - Natural Light" + filesep +"AFTER"  ;    
     Directories.After21 = Directories.SuperDirectory2_After +  filesep  + "21" ;
     Pictures.NaturalImage = Directories.After21 + filesep + "21_B2L.tif"  ;
-    
-    Directories.SuperDirectory1 = DataDir + filesep + "1st set - red";
-    Pictures.RedlImage =  Directories.SuperDirectory1 + filesep +  "2 - no segmentation"+".png" ;
     
     Directories.SuperDirectory4 = DataDir + filesep + "4th set - Coatings";
     

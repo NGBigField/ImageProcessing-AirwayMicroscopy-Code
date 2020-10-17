@@ -34,7 +34,7 @@ classdef ActiveContoursObject < handle
             end           
             % check correct path and add to MATLAB'S paths:
             currentDir = string(currentDir);
-            [currentDir] = app.assert_correct_app_folder(currentDir);
+            [currentDir] = assert_correct_app_folder(obj , currentDir);
             
             %Continue creating the app's Object/Class properties:
             obj.Paths = PathsClass( string(currentDir) ,"Search");
@@ -54,6 +54,15 @@ classdef ActiveContoursObject < handle
         end % function obj = ActiveContoursObject()
         
         
+        
+        function wrong_folder_msg(obj , folder_that_should_exist)            
+            ErrorMsg = "Object Loading Error: Object should run on its main folder with subfolders:";
+            for i = 1 : length(folder_that_should_exist)
+                ErrorMsg = ErrorMsg + newline + "    - " + folder_that_should_exist(i);
+            end            
+            error(ErrorMsg); 
+            
+        end
         
     end %   methods (Access = public)
     
