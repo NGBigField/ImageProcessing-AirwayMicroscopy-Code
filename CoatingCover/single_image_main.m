@@ -1,19 +1,20 @@
 close all; clearvars ; clc;  
 add_app_paths(pwd);
-Paths = PathsClass( string(pwd) , "search" );
 
-% Paths = PathsClass( string(pwd) , "given", "C:\Users\tarama\Technion\Image Processing - Airway Microscopy - General\Data" );
-%% Load Settings:
-ImPath = Paths.ImagesForComparison.Coating ;
+Paths = PathsClass( string(pwd) , "search" );
+% Paths = PathsClass( string(pwd) , "given", "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data" );
+%% Load Image:
+
+% ImPath = Paths.ImagesForComparison.Coating ;
 % ImPath = Paths.AllDirectories.SuperDirectory4 + filesep + "day 3" + filesep + "C+F" + filesep + "CALU_DAY3_E6_4.tif";  
 % ImPath = Paths.AllDirectories.SuperDirectory4 + filesep + "day 5\None\none_C5_day 5_1.tif";
 % ImPath = "C:\Users\NGBig\Technion\Image processing for in vitro airway model microscopy - General\Data\4th set - Coatings\day 3\FBS\CALU_C4_FBS_DAY 3_2.tif" ;
+ImPath = "C:\Users\NGBig\Technion\Image processing for in vitro airway model microscopy - General\Data\4th set - Coatings\day 3\FBS\CALU_e4_FBS_DAY 3_4.tif";
+% ImPath = "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data\4th set - Coatings\day 3\FBS\CALU_e4_FBS_DAY 3_4.tif" ;
+% ImPath = "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data\4th set - Coatings\day 5\C\COLLAGEN_DAY5_D5_2.tif";
+% ImPath = "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data\4th set - Coatings\day 3\C\CALU_DAY3_e5_4.tif"?
 
 Im = imread(ImPath);
-
-ImageIndex         = Paths.ImagesForComparison.info.Coating.ImageIndex;
-coatingTypeStruct  = Paths.ImagesForComparison.info.Coating.coatingTypeStruct;
-dayStruct          = Paths.ImagesForComparison.info.Coating.dayStruct;
 
 %% Find intiall masks:
 [Config , Settings ] = default_CoatingCover_config("Coating");
@@ -34,7 +35,7 @@ ConfigVec = [ 10 ];
 
 for i = 1 : length(ConfigVec)
     Config.EdgeDetection.close_SERadius = ConfigVec(i);
-    [binary_image_edge_smoothed          , ~ , gray_image , FigH]    = segment_coating_image_edgeDetection(        Im , Config , Settings);
+    [ Images , FigH]    = segment_coating_image_fusion(        Im , Config , Settings);
     FigH.Name = "close_SERadius = " + string(ConfigVec(i));
 end
 

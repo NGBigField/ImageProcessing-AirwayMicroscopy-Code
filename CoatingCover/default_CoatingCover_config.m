@@ -1,4 +1,4 @@
-function [Config , Params ] = default_cell_cover_config(ImageType)
+function [Config , Settings ] = default_cell_cover_config(ImageType)
     arguments
         ImageType string = "Unkown"
     end
@@ -7,22 +7,20 @@ function [Config , Params ] = default_cell_cover_config(ImageType)
     Config = struct();
     Config.ImageType = ImageType;
     
-    Config.isHistEqualization = true;
+    %% Config.Prolog
+    Config.Prolog.SubstructBackground_SERadius = 2;
     
-    Config.SubstructBackground_SERadius = 2;
+    %% Config.GrayLevelThresholding: 
+    Config.GrayLevelThresholding = struct();    
+    Config.GrayLevelThresholding.isHistEqualization = false;        
     
-    Config.ThreshouldingGrayPercent =  [] ; % 35 is good.   in range [0 100]
-    Config.ThreshouldingGrayLevel    = 85; % in range [0 to 255]
-%     Config.ThreshouldingGrayLevel    = 5; % in range [0 to 255]
+    Config.GrayLevelThresholding.ThreshouldingGrayPercent = [] ; % 35 is good.   in range [0 100]
+    Config.GrayLevelThresholding.ThreshouldingGrayLevel   = 10 ; % in range [0 to 255]   
     
-    Config.MaxWindowRadius = [] ; % set to zero to not-use
+    Config.GrayLevelThresholding.GrainFiltering_BlackArea = 500; %1000
+    Config.GrayLevelThresholding.GrainFiltering_WhiteArea = 500;
     
-    Config.GrainFiltering_BlackArea = 500; %1000
-    Config.GrainFiltering_WhiteArea = 500;
-    
-    
-    Config.Smoothing_SERadius = 3;
-    
+    Config.GrayLevelThresholding.closeRadius = 3;
     %% Config.DensityWindowFilter 
     Config.DensityWindowFilter = struct();
     Config.DensityWindowFilter.isOn                    = true;
@@ -33,20 +31,31 @@ function [Config , Params ] = default_cell_cover_config(ImageType)
     
     %% Config.EdgeDetection:
     Config.EdgeDetection = struct();
-    Config.EdgeDetection.isOn= true;
-    Config.EdgeDetection.close_SERadius = 15;
-    Config.EdgeDetection.isHistEqualization = true;
-    Config.EdgeDetection.cannyLow  = 0.24 ;  
-    Config.EdgeDetection.cannyHigh = 0.61 ;
+    
+    Config.EdgeDetection.isHistEqualization = false;
+
+    Config.EdgeDetection.cannyLow   = 0.05;
+    Config.EdgeDetection.cannyHigh  = 0.15;
+    
+    Config.EdgeDetection.smallCloseRadius = 3 ;
+    Config.EdgeDetection.bigCloseRadius   = 15; 
+    
+    
+
+    
+    %% Config.Fusion:
+  
+    Config.Fusion.isOn = true;
+    
     
     
     %% Params
-    Params = struct();
-    Params.isShowMontage = false;
+    Settings = struct();
+    Settings.isShowMontage = false;
     
     switch ImageType
         case "Unkown"
-            return % as is
+            
         case "Red"
 
         case "Natural"
