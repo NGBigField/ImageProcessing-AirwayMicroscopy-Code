@@ -1,18 +1,14 @@
 close all; clearvars ; clc;  
-add_app_paths(pwd);
-%Paths = PathsClass( string(pwd) , "search" );
-Paths = PathsClass( string(pwd) , "given", "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data" );
+CurrentFolderPath = assert_correct_app_folder();
+
+Paths = PathsClass( string(CurrentFolderPath) , "search" );
+% Paths = PathsClass( string(pwd) , "given", "C:\Users\Tomer Arama\Technion\Image Processing - Airway Microscopy - General\Data" );
 %% Go over all Coating:
 Data = DataStruct();
 
-[Config , Settings ] = default_CoatingCover_config("Coating");
-Settings.isShowMontage = false;
-Settings.howManyImages2Save = "1 per type per day" ; % "All"/"1 per type per day"/"Only first Image";
-
-
-Config.EdgeDetection.isHistEqualization = false;
-Config.EdgeDetection.cannyLow   = 0.05;
-Config.EdgeDetection.cannyHigh  = 0.15;
+[Config ] = default_params("Coating");
+PlotSettings = Config.CannyThresholdingFusion.PlotSettings;
+PlotSettings.howManyImages2Save = "1 per type per day" ; % "All"/"1 per type per day"/"Only first Image";
 
 
 % for each day:
@@ -30,12 +26,14 @@ for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
             
             % read Image:
             Im = imread( coatingTypeStruct.Images{imIndex} );
-            % calc Cell-Coverage:
-            [cell_coverage , binary_image] =  calc_image_cell_coverage(Im , Config , Settings );
+            % calc Cell-Coverage:            
+            [SegmentResults , ~]  = SegmentCoatingImageFusion(Im , Config.CannyThresholdingFusion , PlotSettings);
+            SegmentedBWIm = SegmentResults.SegmentedBWIm;
+            cell_coverage = CalcWhitePixelsPercentage(SegmentedBWIm);
             % save Data:
             Data.(dayStruct.key).(coatingTypeStruct.key) = [ Data.(dayStruct.key).(coatingTypeStruct.key)  , cell_coverage];
             % Plot images side by side if we're on the lucky number:
-            images_side_by_side_binary_with_original(Im,binary_image,imIndex,ImageIndex2ShowAndSave,  coatingTypeStruct , dayStruct , cell_coverage , Paths , Settings);
+            images_side_by_side_binary_with_original(Im,SegmentedBWIm,imIndex,ImageIndex2ShowAndSave,  coatingTypeStruct , dayStruct , cell_coverage , Paths , PlotSettings);
             
             
         end % imIndex

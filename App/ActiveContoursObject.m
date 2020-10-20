@@ -1,23 +1,26 @@
 classdef ActiveContoursObject < handle
     
-    properties (Access = private)
-        Paths ; % Class of all possible paths and images
-        SegmentAlgo ; % Class to manage the parameters and execution of the Segmentation Algorithm 
-        ImagesManager ;  % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
-        WindowsManager ; % Manges and controls all open apps and windows
+    properties (Access = public)
+        Paths              PathsClass            % Class of all possible paths and images
+        SegmentAlgo        SegmentationAlgoClass % Class to manage the parameters and execution of the Segmentation Algorithm 
+        ImagesManager      ImagesManagerClass    % Class to controls the Behaviour, Manipulations, Additions and Acquisition  of Images
+        WindowsManager     WindowsManagerClass   % Manges and controls all open apps and windows
+
+        pressOnScreenState = "idle";
+        
+        ImageFigH 
+    end
+    
+    properties (Access = private)        
         ApearanceDefaultVals = struct('DefaultButtonColor' , [0.96, 0.96,0.96] , ...
                                       'ActiveButtonColor'  , [0.5 , 0.5 , 0  ] , ...
                                       'WaitingButtonColor' , [0.2 , 0.6 , 1  ] ,...
                                       'MaskColor'          , struct("ColoredImage" , [0,1,0] , ...
                                                                     "GrayImage"    , [1,0,0]   )...
-                                   )
-                                                                       
+                                   )                                                              
     end
     
-    properties (Access = public)
-        EmbeddedProgressBar
-        pressOnScreenState = "idle";
-    end
+
     
     
     methods (Access = public) 
@@ -54,7 +57,22 @@ classdef ActiveContoursObject < handle
 %             obj.read_user_chosen_image();
         end % function obj = ActiveContoursObject()
         
-        
+        function [] = show_image(obj , Im)
+            arguments
+               obj ActiveContoursObject
+               Im 
+            end
+            
+            if isempty(obj.ImageFigH) || ~isgraphics(obj.ImageFigH)
+                obj.ImageFigH = figure();  
+                obj.ImageFigH.Name = "ActiveContoursObject Image Figure";
+            end
+            % Focus image into view:
+            figure(obj.ImageFigH)
+            % show:
+            imshow(Im);
+            
+        end
         
         function wrong_folder_msg(obj , folder_that_should_exist , isErrorIfNotMainFolder)            
             

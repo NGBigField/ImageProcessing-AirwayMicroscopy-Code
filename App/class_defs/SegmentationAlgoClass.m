@@ -87,7 +87,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         end % start_or_stop_algorithm(obj)
         function [] = start_algorithm(obj)
             %check if we're ready:
-            if isempty( obj.Masks_cell ) && (obj.Params.General.ChosenAlgorithm ~= AvailableAlgorithms.AdaptiveThreshold) % AdaptiveThreshold doesn't need exisitng masks
+            if isempty( obj.Masks_cell ) && ( ~ismember(obj.Params.General.ChosenAlgorithm, AvailableAlgorithms.AlgorithmsWithoutPriorROI() ))  % for example AdaptiveThreshold doesn't need exisitng masks
                 warning("Choose Region Of Interest 'ROI'  before starting algorithm");
                 obj.stop_algorithm();
                 return
@@ -101,8 +101,6 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                     obj.start_AdaptiveThreshold();
                 case AvailableAlgorithms.MatlabBuiltIn
                     obj.start_MatlabBuiltIn();
-                case AvailableAlgorithms.Lankton
-                    obj.start_Lankton();
                 case AvailableAlgorithms.Watershed
                     obj.start_Watershed();
                 case AvailableAlgorithms.CannyThresholdingFusion
@@ -437,7 +435,13 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             
         end % start_Watershed
         function [] = start_CannyThresholdingFusion(obj)
-            
+            Config       = obj.Params.CannyThresholdingFusion;            
+            PlotSettings = obj.Params.CannyThresholdingFusion.PlotSettings;       
+            Im           = obj.ImagesManager.get("GrayImage");         
+            [ Images , MontageFigH]    = SegmentCoatingImageFusion(  Im , Config , PlotSettings);
+            % Takes too long:
+            %obj.Masks_cell  = seperate_mask(Images.SegmentedBWIm ,"sparse");
+            obj.Masks_Total = Images.SegmentedBWIm;
         end
     end %  (Access = protected)
     

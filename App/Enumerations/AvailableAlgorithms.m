@@ -19,8 +19,25 @@ classdef AvailableAlgorithms
             Methods_struct = struct('Edge'   , 'edge'     ,  ...
                                     'Region' , 'chan-vese');
         end %  methods (Static)
-    end
+        
+        function [AlgoArray] = AlgorithmsWithoutPriorROI( outputType)
+            
+            arguments 
+               outputType string {mustBeMember(outputType,["enum" , "string"])} = "enum"               
+            end
+            
+            switch outputType
+                case "enum"
+                    AlgoArray = [AvailableAlgorithms.AdaptiveThreshold , AvailableAlgorithms.CannyThresholdingFusion  ] ;
+                case "string"
+                    AlgoArray = [                   "AdaptiveThreshold" ,                   "CannyThresholdingFusion" ] ;
+                otherwise
+                    error("outputType Not Supported");
+            end% switch            
+        end %  AlgorithmsWithoutPriorROI( outputType)
+        
+    end % methods static
     
-end
+end % class
 
 

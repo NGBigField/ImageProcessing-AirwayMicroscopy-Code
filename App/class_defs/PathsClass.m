@@ -1,13 +1,17 @@
 classdef  PathsClass
     
    properties
-       CoatingDirectory
        
+       % Directory Tree class:
+       DirectoryTree DirTreeClass
+       
+       % Handy Containers:
        AllDirectories
-       DirectoryTree
-       
        AllPictures
        AvailablePictures
+       
+       % Spesific Containers:
+       CoatingDirectory
        ImagesForComparison
        Results
        
@@ -31,18 +35,8 @@ classdef  PathsClass
                given_data_folder string = string.empty()
            end
            
-           %PathsClass(FullPath)  c'tor for Paths object
-           % input: 1.  fullpath 
-           %        2.  method:  'Relative' (Default)   /  'Search'   / 'Given'    : methods for searching for data.
-           %        3.  if method=='Given' :  path to Data folder
-           
-           % check input arguments
-           if (nargin >= 2) &&  ~ischar(method) && ~isstring(method) 
-               error("Method input must be a string");
-           end
-           if (nargin == 1) %complete data with relative path
-               method = "relative";
-           end
+
+
            % act according to input:
            switch lower(string(method)) % lower case (insesitive string switch)
                case "search"
@@ -56,7 +50,9 @@ classdef  PathsClass
                case "relative"
                    DataDir = app_main_folder  + "\..\..\Data" ;
                case "choose"
-                   Title = "Choose Main Data Folder:";
+                   MsgStr = "Choose ""Main Data Folder"" with the selection tool. ";
+                   disp(MsgStr);
+                   Title = "Choose Main Data Folder:";                   
                    res = uigetdir(app_main_folder,Title);
                    if isnumeric(res) && res==0
                        error("User Didn't choose the main Data Folder");

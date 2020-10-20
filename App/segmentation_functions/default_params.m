@@ -34,6 +34,14 @@ function [Config] = default_params( ImageType )
     
     %  Params.AdaptiveThreshold.SE = strel('disk',DistRadius);
     
+    % Coating Cover algo:   
+    % Canny Thresholding Fusion:
+    % =========================
+    [Config.CannyThresholdingFusion , Config.CannyThresholdingFusion.PlotSettings ] = default_CannyThresholdingFusion_config(ImageType);
+    
+    
+    Config.ImageManipulations = struct();
+    % empty for now;
 
     
    switch ImageType
@@ -54,20 +62,12 @@ function [Config] = default_params( ImageType )
        case "Flask"
            
        case "Coating"
-           
+           Config.General.ChosenAlgorithm   =  AvailableAlgorithms.CannyThresholdingFusion;
        otherwise
            error("Not a legit Type")
    end % switch
    
-   % Coating Cover algo:   
-   % Canny Thresholding Fusion:
-   % =========================
-   [Config.CannyThresholdingFusion , Config.CannyThresholdingFusion.PlotSettings ] = default_cell_cover_config(ImageType);
    
-   
-       
-    Config.ImageManipulations = struct();
-    % empty
    
    
 end % function

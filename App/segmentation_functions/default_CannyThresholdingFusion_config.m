@@ -1,4 +1,4 @@
-function [Config , Settings ] = default_cell_cover_config(ImageType)
+function [Config , Settings ] = default_CannyThresholdingFusion_config(ImageType)
     arguments
         ImageType string = "Unkown"
     end

@@ -1,27 +1,36 @@
-function  [Images , figH] = segment_coating_image_fusion(originalIm , Config , Settings)
+function  [Images , figH] = SegmentCoatingImageFusion(originalIm , Config , Settings)
       
     Images = struct;
     
-    %get grey image:
-    gray = rgb2gray(originalIm);
+    
+    % ColoredImage ->  GrayImage :
+    if ndims( originalIm )==3 % if Colored Image:
+        grayIm = rgb2gray( originalIm );
+    elseif ismatrix( originalIm )   %If gray Image:
+        grayIm = originalIm;
+    else
+        error("Wrong number image dimensions");
+    end
+    
+
     
     %% porlog:
     
     %Subtract background:
     if ~isempty(Config.Prolog.SubstructBackground_SERadius)
-        gray = image_substruct_background(gray , Config.Prolog.SubstructBackground_SERadius);
+        grayIm = ImSubstructBackground(grayIm , Config.Prolog.SubstructBackground_SERadius);
     end
 
     %% GrayLevelThresholding:
 
     %histogram equalization:
     if Config.GrayLevelThresholding.isHistEqualization
-        gray = histeq(gray);
+        grayIm = histeq(grayIm);
     end
     
     % Thresholding
     grayThreshold = Config.GrayLevelThresholding.ThreshouldingGrayLevel;
-    GrayLevelThresholdingIm = gray > grayThreshold ;
+    GrayLevelThresholdingIm = grayIm > grayThreshold ;
     
     if ~isempty(Config.GrayLevelThresholding.closeRadius)
         SE = strel('disk', Config.GrayLevelThresholding.closeRadius );
@@ -31,19 +40,19 @@ function  [Images , figH] = segment_coating_image_fusion(originalIm , Config , S
     end
     
     % For visualization:
-    grayHisteqIm = histeq(gray);
+    grayHisteqIm = histeq(grayIm);
     %% Edge Detection:
     
     %histogram equalization:
     if Config.EdgeDetection.isHistEqualization
-        gray = histeq(gray);
+        grayIm = histeq(grayIm);
     end
     
     % Canny:
     CannyLow  = Config.EdgeDetection.cannyLow ;
     CannyHigh = Config.EdgeDetection.cannyHigh;
 
-    CannyIm = edge(gray,'canny' , [ CannyLow ,  CannyHigh ]);   %  'canny',[low high] where:  0 < low < high < 1 ;
+    CannyIm = edge(grayIm,'canny' , [ CannyLow ,  CannyHigh ]);   %  'canny',[low high] where:  0 < low < high < 1 ;
     
         
     % Close:
@@ -58,7 +67,7 @@ function  [Images , figH] = segment_coating_image_fusion(originalIm , Config , S
     end    
 
     if ~isempty(bigCloseRadius)             
-        SE = strel('disk', Config.EdgeDetection.close_SERadius );
+        SE = strel('disk', bigCloseRadius );
         bigClosedCannyIm   = imclose( CannyIm , SE );
     else
         bigClosedCannyIm = CannyIm;
@@ -67,7 +76,7 @@ function  [Images , figH] = segment_coating_image_fusion(originalIm , Config , S
     ExpansionFromSmallToBig = bigClosedCannyIm-smallClosedCannyIm;
     
     % For visualizations:
-    [Gmag,~] = imgradient(gray,'sobel');
+    [Gmag,~] = imgradient(grayIm,'sobel');
     % Normalization:
     Gmag = Gmag/max(Gmag,[],'all');
 
@@ -83,6 +92,7 @@ function  [Images , figH] = segment_coating_image_fusion(originalIm , Config , S
     
     Images.originalIm =originalIm;
     Images.grayHisteqIm = grayHisteqIm;
+    Images.SegmentedBWIm = CannyExpandedWithGrayAgreement;
     
     
     if Settings.isShowMontage
@@ -92,15 +102,10 @@ function  [Images , figH] = segment_coating_image_fusion(originalIm , Config , S
         figH = figure();
         [SubPlotHandleArray , options] = LinkedMontage( ImCell , TitlesArray , "Layout" , [3 inf ] , "FigureHandle" , figH , "ImageRelativeSize", 0.9);
         figH.Name = "Montage";
+    else
+        figH = gobjects;
     end
     
    
     
-end
-
-
-function without_background =  image_substruct_background(im , disk_radius )
-SE = strel('disk',   disk_radius  );
-eroded = imerode(im,SE);
-without_background = im - eroded;
 end

@@ -1,12 +1,14 @@
 function [currentDir] = assert_correct_app_folder( appOrObject , currentDir , isErrorIfNotMainFolder)
 
     arguments
-       appOrObject
-       currentDir string
+       appOrObject  = []
+       currentDir string = pwd
        isErrorIfNotMainFolder logical = true
     end
-
-    folder_that_should_exist = [ "class_defs" , "app_functions"  ,"segmentation_functions"  ,"enumerations" ,"image_manipulations_functions"];
+    
+    folder_that_should_exist = [ "image_manipulations_functions"  "visualization_functions"    "class_defs"         "segmentation_functions" ...        
+                                 "app_functions"                  "enumerations"               "tests_and_scripts"                          ];
+    
     is_exist_folder          = false(size(folder_that_should_exist));
 
     currentFolderData = dir(currentDir);
@@ -18,8 +20,8 @@ function [currentDir] = assert_correct_app_folder( appOrObject , currentDir , is
         % set MATLAB focux to currect estimation for main folder:
         cd(string(CurrentFullPath) + filesep + "..");
         % update current folder and run again:
-        currentDir = string(GetFullPath(char(currentDir+filesep+"..")));
-        [currentDir] = assert_correct_app_folder(app , currentDir);
+        currentDir = string(char(currentDir+filesep+".."));
+        [currentDir] = assert_correct_app_folder(appOrObject , currentDir , isErrorIfNotMainFolder);
         return
     end
 
@@ -41,7 +43,7 @@ function [currentDir] = assert_correct_app_folder( appOrObject , currentDir , is
 
     end
 
-    if ~all(is_exist_folder)
+    if ~all(is_exist_folder) && ~isempty(appOrObject)
         appOrObject.wrong_folder_msg(folder_that_should_exist, isErrorIfNotMainFolder)            
     end
 end % endd function

@@ -93,10 +93,6 @@ function [res] = legitImagesExtensions()
     res = ["jpg", "png", "tiff", "tif", "bmp"];
 end
 
-function  [res] = illegalStructChars()
-
-
-end
 
 function [DirKeys] = namesToKeys(DirNames)
 

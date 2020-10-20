@@ -134,7 +134,9 @@ classdef WindowsManagerClass  < handle
                 otherwise
                     error("on_off_str="""+on_off_str+"""  Not an expected string");
             end % switch
-            obj.MainApp.set_algoInProgress(on_off_str)
+            if obj.has_MainApp
+                obj.MainApp.set_algoInProgress(on_off_str)
+            end
         end % set_algoInProgress( on_off_str )
         function [] = update_progress_bar(obj , progressValue)
             if progressValue>1 || progressValue<0
