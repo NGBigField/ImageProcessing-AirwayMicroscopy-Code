@@ -16,6 +16,7 @@ function [Config] = default_params( ImageType )
     Config.MatlabBuiltIn.Method               =  AvailableAlgorithms.MatlabBuiltInMethods.Edge;
     Config.MatlabBuiltIn.MaxNumIteration      =  1000;
     Config.MatlabBuiltIn.IterationsPerFrame   = 2;
+    Config.MatlabBuiltIn.MasksRecombination   = false;
     
     % Watershed:
     % =========
@@ -72,6 +73,7 @@ function [Config] = default_params( ImageType )
            Config.MatlabBuiltIn.Method              =  AvailableAlgorithms.MatlabBuiltInMethods.Edge;
            Config.MatlabBuiltIn.MaxNumIteration     =  200;
            Config.MatlabBuiltIn.IterationsPerFrame  =  10;
+           Config.MatlabBuiltIn.MasksRecombination  =  true;
        case "Coating"
            Config.General.ChosenAlgorithm   =  AvailableAlgorithms.CannyThresholdingFusion;
        otherwise

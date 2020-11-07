@@ -41,6 +41,8 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                     obj.Params.MatlabBuiltIn.MaxNumIteration = Value;
                 case "IterationsPerFrame"
                     obj.Params.MatlabBuiltIn.IterationsPerFrame = Value;
+                case "MatlabBuildIn MasksRecombination"
+                    obj.Params.MatlabBuiltIn.MasksRecombination = Value;
                  % WaterShed:
                 case "WaterShed Tolerance"
                     obj.Params.WaterShed.Tolerance = Value;
@@ -60,7 +62,7 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                         error("Wrong Input");
                     end
                     obj.Params.AdaptiveThreshold.MeanOrMedian = Value;
-                        
+
                 otherwise
                     error("Unkown Name");
             end %Switch
@@ -388,11 +390,29 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                         is_maskFinished(maskIndex)    = [];
                         disp("Deleted mask at index " + num2str( maskIndex ) );
                         break % Go back to before we've calculated    length( obj.Masks_cell )
-                    end                                       
+                    end                       
+                    
+                    % Mask recombination:
+                    if obj.Params.MatlabBuiltIn.IterationsPerFrame
+                        maskAnd = and( TotallMask2Show , MaskOut );
+                        if any(maskAnd,'all') 
+                           disp("Recombining Masks");                            
+                           % Find recombination Indices:
+                           [maskJointIndex1 , maskJointIndex2] = findRecombinedMasks(MasksCellArray);                           
+                           % Recomine 2 into 1:                           
+                           MasksCellArray{maskJointIndex1} = MasksCellArray{maskJointIndex1} | MasksCellArray{maskJointIndex2};
+                           % Delete 2
+                           MasksCellArray(maskJointIndex2)     = [];
+                           MasksRecentChanges(maskJointIndex2) = [];
+                           is_maskFinished(maskJointIndex2)    = [];
+                           break % Go back to before we've calculated    length( obj.Masks_cell )
+                        end
+                    end
+                    
                     % Update the next mask to show:
                     TotallMask2Show = TotallMask2Show  |  MaskOut;
-             
                     
+              
                 end % maskIndex
                 
                 % Print Progress:
@@ -537,4 +557,27 @@ function [ MaskRecentChanges , is_maskedFinished ]= update_mask_recent_changes(M
     end
     
 
+end
+
+
+function [maskJointIndex1 , maskJointIndex2] = findRecombinedMasks(MasksCellArray)
+    
+    for i = 1 : ( length(MasksCellArray) - 1)
+        maskI = MasksCellArray{i};
+        for j = (i+1) : length(MasksCellArray)
+            maskJ = MasksCellArray{j};
+            
+            isRecomined = any(and(maskI,maskJ),'all');
+            if isRecomined
+               maskJointIndex1=i;
+               maskJointIndex2=j;
+               return
+            end
+            
+        end % j        
+    end % i
+
+    % If we got here there was no recombination!
+    error("No Recombination");
+    
 end
