@@ -2,19 +2,25 @@ classdef WindowsManagerClass  < handle
     %WindowsManager Manges and controls all open apps and windows
  
     properties
-        % Images Manager Class:
-        ImagesManager
+        % Other classes we should know about:        
+        ImagesManager          ImagesManagerClass
+        Paths                  PathsClass
         
         % Apps and Windows
-        MainApp
-        MainObject
-        SingleImageWindow
+        MainApp                ActiveContoursApp
+        MainObject             ActiveContoursObject
+        SingleImageWindow      ImagesManagerClass
         
-        has_MainApp           = false;
-        has_MainObject        = false;
-        has_SingleImageWindow = false;
+        has_MainApp            logical = false;
+        has_MainObject         logical = false;
+        has_SingleImageWindow  logical = false;
+        
+        %Recording:
+        Recording = struct( "isRecording"   , false                       )
+                            
         
         Config = struct("UpdateAllOpenWindows" , true)
+        
     end
     
     methods (Access = public)
@@ -41,8 +47,8 @@ classdef WindowsManagerClass  < handle
         end % set_ImagesManager
         %% Set/Get:
         function [] = set(obj , key , value )
-            switch key
-                case "Image2Show_color"
+            switch lower(string(key))
+                case lower("Image2Show_color")
                     if ~obj.has_MainApp
                         return
                     end                    
@@ -54,6 +60,31 @@ classdef WindowsManagerClass  < handle
                         obj.MainApp.GrayMenu.Checked = "on";
                     else
                         error("Unrecognized Color");
+                    end
+                case lower("Recording")
+                    if     value == "start"
+                        obj.Recording.isRecording = true;
+                        % Full path:
+                        % folder = obj.Paths.Results;
+                        folder = string(pwd); 
+                        time = clock;
+                        timeStamp = string(time(1)) + "-" + sprintf("%02d",time(2)) + "-" + sprintf("%02d",time(3)) + " " + sprintf("%02d",time(4)) + "-" + sprintf("%02d",time(5)) + "-" + sprintf("%02d",round(time(6)));
+                        fullPath = folder + filesep + "Recording " + timeStamp + ".avi";                        
+                        % start video writer:
+                        obj.Recording.writerObj = VideoWriter(fullPath);
+                        obj.Recording.writerObj.Quality    = 100;
+                        obj.Recording.writerObj.FrameRate  = 10;                                                
+                        %open
+                        obj.Recording.writerObj.open();
+                    elseif value == "stop"
+                        obj.Recording.isRecording = false;                        
+                        % close
+                        obj.Recording.writerObj.close();
+                    elseif value == "pause"
+                        obj.Recording.isRecording = false;
+
+                    else
+                        error( string(value)+" not supproted for set recording");
                     end
                 otherwise 
                     error("Unknown key to set");
@@ -94,6 +125,12 @@ classdef WindowsManagerClass  < handle
             end
             if isPlotOnSingleImageWindow                
                 obj.SingleImageWindow.show_image(Im);
+            end
+            
+            % Record Image if needed:
+            if obj.Recording.isRecording
+                Im = Im ./ max(Im,[],'all');
+               writeVideo( obj.Recording.writerObj , Im );
             end
         end
         %% Windows:
