@@ -114,6 +114,9 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
         function  [] = stop_algorithm(obj)
             disp("Stopping Algorithm");
             obj.State = AlgorithmStateEnum.Idle;
+            % Update last segmentation results:
+            
+            % Show numerical results:
             obj.WindowsManager.set_algoInProgress(  "off" );
             obj.WindowsManager.update_progress_bar(0); % reset progress bar;
             obj.calc_and_show_mask_cover_percentage();
@@ -357,15 +360,16 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                 end
                 % Create a mask that is the results of all the masks in the current frame:
                 TotallMask2Show     = zeros( ImageSize );
+                
                 for maskIndex = 1 : length( MasksCellArray )   
                     
                     MaskIn = MasksCellArray{maskIndex};
                     % if this mask is already done, skip this itteration
-                    if is_maskFinished(maskIndex) 
+                    if is_maskFinished(maskIndex) || (obj.State == AlgorithmStateEnum.UserAskedToStop )
                         TotallMask2Show = TotallMask2Show  |  MaskIn;
                         continue
                     end
-                    
+
                     
                     % Active Contours on this mask:
                     MaskOut = activecontour(Im , MaskIn , IterationsPerFrame , Method , ...
@@ -388,23 +392,11 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                     % Update the next mask to show:
                     TotallMask2Show = TotallMask2Show  |  MaskOut;
              
-                    % check if user asked to terminate
-                    if  obj.State == AlgorithmStateEnum.UserAskedToStop                        
-                        break % If user asked to stop -  Terminate:
-                    end
                     
                 end % maskIndex
                 
                 % Print Progress:
                 fprintf('Frame %04d / %04d \n', frameIndex , MaxIterationNum/IterationsPerFrame) ;     
-                
-                % check if user asked to terminate else update ProgressBar:
-                if obj.State == AlgorithmStateEnum.UserAskedToStop
-                    break
-                else
-                    val  =  frameIndex*IterationsPerFrame  / MaxIterationNum;
-                    obj.WindowsManager.update_progress_bar( val );
-                end
                 
                 %refresh image's with Mask:
                 obj.ImagesManager.mask_over_image(  TotallMask2Show , "FromScratch");
@@ -412,6 +404,14 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                 
                 % Update Mask Cover Percentage:
                 [~] = obj.calc_and_show_mask_cover_percentage( TotallMask2Show , ImageSize );
+                
+                % check if user asked to terminate else update ProgressBar:
+                if obj.State == AlgorithmStateEnum.UserAskedToStop                    
+                    break
+                else
+                    val  =  frameIndex*IterationsPerFrame  / MaxIterationNum;
+                    obj.WindowsManager.update_progress_bar( val );
+                end
                 
             end % for frameIndex
             

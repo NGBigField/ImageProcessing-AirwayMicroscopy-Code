@@ -19,7 +19,8 @@ classdef WindowsManagerClass  < handle
         Recording = struct( "isRecording"   , false                       )
                             
         
-        Config = struct("UpdateAllOpenWindows" , true)
+        Config = struct("UpdateAllOpenWindows"        , true ,  ...
+                        "SaveRecordingInPathsResults" , true       );
         
     end
     
@@ -64,9 +65,12 @@ classdef WindowsManagerClass  < handle
                 case lower("Recording")
                     if     value == "start"
                         obj.Recording.isRecording = true;
-                        % Full path:
-                        % folder = obj.Paths.Results;
-                        folder = string(pwd); 
+                        % Full path:                        
+                        if obj.Config.SaveRecordingInPathsResults
+                            folder = obj.Paths.Results.Recording.Path;
+                        else
+                            folder = string(pwd); 
+                        end                        
                         time = clock;
                         timeStamp = string(time(1)) + "-" + sprintf("%02d",time(2)) + "-" + sprintf("%02d",time(3)) + " " + sprintf("%02d",time(4)) + "-" + sprintf("%02d",time(5)) + "-" + sprintf("%02d",round(time(6)));
                         fullPath = folder + filesep + "Recording " + timeStamp + ".avi";                        
@@ -130,7 +134,7 @@ classdef WindowsManagerClass  < handle
             % Record Image if needed:
             if obj.Recording.isRecording
                 Im = Im ./ max(Im,[],'all');
-               writeVideo( obj.Recording.writerObj , Im );
+                obj.Recording.writerObj.writeVideo( Im );
             end
         end
         %% Windows:

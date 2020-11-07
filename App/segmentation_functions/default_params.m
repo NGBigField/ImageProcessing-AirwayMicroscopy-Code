@@ -1,6 +1,6 @@
 function [Config] = default_params( ImageType )
     arguments
-        ImageType string {mustBeMember(ImageType,["Unkown" "Red" "Natural" "Flask" "Coating"])} = "Unkown";
+        ImageType string {mustBeMember(ImageType,["Unknown" "Red" "Natural" "Flask" "Coating"])} = "Unknown";
     end
     
     Config = struct();
@@ -45,14 +45,20 @@ function [Config] = default_params( ImageType )
 
     
    switch ImageType
-       case "Unkown"
+       case "Unknown"
            
        case "Red"
+           % What will be actually used:
            Config.General.ChosenAlgorithm     =  AvailableAlgorithms.Watershed;
            Config.WaterShed.Tolerance = 12;
+           % Other params:
+           Config.MatlabBuiltIn.SmoothFactor         =  0.5;
+           Config.MatlabBuiltIn.ContractionBias      =  0.5;
+           Config.MatlabBuiltIn.Method               =  AvailableAlgorithms.MatlabBuiltInMethods.Region;
+           Config.MatlabBuiltIn.MaxNumIteration      =  1000;
            
        case "Natural"
-           Config.General.ChosenAlgorithm     =  AvailableAlgorithms.MatlabBuiltIn;
+           Config.General.ChosenAlgorithm           =  AvailableAlgorithms.MatlabBuiltIn;
            Config.MatlabBuiltIn.SmoothFactor        =  0.1;
            Config.MatlabBuiltIn.ContractionBias     =  -0.4;
            Config.MatlabBuiltIn.Method              =  AvailableAlgorithms.MatlabBuiltInMethods.Region;
@@ -60,7 +66,12 @@ function [Config] = default_params( ImageType )
            Config.MatlabBuiltIn.IterationsPerFrame  =  2;
            
        case "Flask"
-           
+           Config.General.ChosenAlgorithm           =  AvailableAlgorithms.MatlabBuiltIn;
+           Config.MatlabBuiltIn.SmoothFactor        =  1.1;
+           Config.MatlabBuiltIn.ContractionBias     = -0.4;
+           Config.MatlabBuiltIn.Method              =  AvailableAlgorithms.MatlabBuiltInMethods.Edge;
+           Config.MatlabBuiltIn.MaxNumIteration     =  200;
+           Config.MatlabBuiltIn.IterationsPerFrame  =  10;
        case "Coating"
            Config.General.ChosenAlgorithm   =  AvailableAlgorithms.CannyThresholdingFusion;
        otherwise

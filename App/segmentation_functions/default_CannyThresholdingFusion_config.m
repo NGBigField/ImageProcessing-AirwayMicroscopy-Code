@@ -1,6 +1,6 @@
 function [Config , Settings ] = default_CannyThresholdingFusion_config(ImageType)
     arguments
-        ImageType string = "Unkown"
+        ImageType string = "Unknown"
     end
     %% Config:
     
@@ -54,7 +54,7 @@ function [Config , Settings ] = default_CannyThresholdingFusion_config(ImageType
     Settings.isShowMontage = false;
     
     switch ImageType
-        case "Unkown"
+        case "Unknown"
             
         case "Red"
 

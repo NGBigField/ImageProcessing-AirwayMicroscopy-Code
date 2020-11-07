@@ -25,7 +25,7 @@ classdef DirTreeClass <  dynamicprops
                isRoot   (1,1) logical = false
                Key      (1,1) string  = ""    
                Name     (1,1) string  = ""
-               ImageType ImageTypeEnum = ImageTypeEnum.Unkown
+               ImageType ImageTypeEnum = ImageTypeEnum.Unknown
             end
             
             obj.Path = FullPath;
@@ -119,7 +119,7 @@ function ImageType = parseImageTypeFromDirName(dirName)
     elseif  contains(dirName,"Coating", 'IgnoreCase',true) 
         ImageType = ImageTypeEnum.Coating;
     else
-        ImageType = ImageTypeEnum.Unkown;
+        ImageType = ImageTypeEnum.Unknown;
     end
     
 

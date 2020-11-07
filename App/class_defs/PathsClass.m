@@ -290,6 +290,10 @@ function Results = organize_Results_sub_dirs(AllDirectories , Paths)
     Results.TempResults.Path = Paths.AllDirectories.DataDir + filesep + "tempResults";
     Results.TempResults.tempMask_FullPath      = Results.TempResults.Path + filesep + "tempMask.mat";
     Results.TempResults.tempGrayImage_FullPath = Results.TempResults.Path + filesep + "tempGrayImage.tif";
+    
+    % Recording:
+    Results.Recording = struct();
+    Results.Recording.Path = Results.Path  + filesep + "Recordings";
 
 
 end % self.Results = organize_Results_sub_dirs(self.AllDirectories)
