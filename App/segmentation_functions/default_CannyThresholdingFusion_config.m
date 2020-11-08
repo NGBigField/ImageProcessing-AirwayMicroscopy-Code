@@ -40,8 +40,9 @@ function [Config , Settings ] = default_CannyThresholdingFusion_config(ImageType
     Config.EdgeDetection.smallCloseRadius = 3 ;
     Config.EdgeDetection.bigCloseRadius   = 15; 
     
-    
-
+    % Grain Filtering
+    Config.EdgeDetection.GrainFiltering_WhiteRadius_pre  = [];
+    Config.EdgeDetection.GrainFiltering_WhiteRadius_post = 800;
     
     %% Config.Fusion:
   

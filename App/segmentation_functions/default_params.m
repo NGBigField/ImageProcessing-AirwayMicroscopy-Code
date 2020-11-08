@@ -60,11 +60,11 @@ function [Config] = default_params( ImageType )
            
        case "Natural"
            Config.General.ChosenAlgorithm           =  AvailableAlgorithms.MatlabBuiltIn;
-           Config.MatlabBuiltIn.SmoothFactor        =  0.1;
-           Config.MatlabBuiltIn.ContractionBias     =  -0.4;
+           Config.MatlabBuiltIn.SmoothFactor        =   0.1;
+           Config.MatlabBuiltIn.ContractionBias     =  -0.8;
            Config.MatlabBuiltIn.Method              =  AvailableAlgorithms.MatlabBuiltInMethods.Region;
            Config.MatlabBuiltIn.MaxNumIteration     =  200;
-           Config.MatlabBuiltIn.IterationsPerFrame  =  2;
+           Config.MatlabBuiltIn.IterationsPerFrame  =  5;
            
        case "Flask"
            Config.General.ChosenAlgorithm           =  AvailableAlgorithms.MatlabBuiltIn;
