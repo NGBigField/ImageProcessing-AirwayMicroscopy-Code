@@ -212,7 +212,12 @@ classdef WindowsManagerClass  < handle
                end
            end
            % Correct Pixel Values:
-           Im = Im ./ max(Im,[],'all');           
+           if min(Im,[],'all') < 0
+               Im = Im - min(Im,[],'all') ;
+           end
+           if max(Im,[],'all') > 1
+               Im = Im ./ max(Im,[],'all');
+           end
        end % AdjustFrame4VideoWriter
        
     end
