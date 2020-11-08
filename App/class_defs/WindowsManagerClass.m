@@ -204,10 +204,12 @@ classdef WindowsManagerClass  < handle
        
        function Im = AdjustFrame4VideoWriter(obj,Im)
            % Correct Image size:
-           requiredImSize = [obj.Recording.writerObj.Height, obj.Recording.writerObj.Width];
-           incomingImSize = [size(Im,1) , size(Im,2)];
-           if any(requiredImSize ~= incomingImSize)
-               Im = imresize(Im, requiredImSize);
+           if ~isempty(obj.Recording.writerObj.Height)
+               requiredImSize = [obj.Recording.writerObj.Height, obj.Recording.writerObj.Width];
+               incomingImSize = [size(Im,1) , size(Im,2)];
+               if  any(requiredImSize ~= incomingImSize)
+                   Im = imresize(Im, requiredImSize);
+               end
            end
            % Correct Pixel Values:
            Im = Im ./ max(Im,[],'all');           
