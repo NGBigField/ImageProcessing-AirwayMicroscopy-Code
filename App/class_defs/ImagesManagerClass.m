@@ -6,11 +6,12 @@ classdef ImagesManagerClass < handle
         %control:
         SegmentAlgo 
         WindowsManager % Manges and controls all open apps and windows
-        Config = struct( "histeq_image"            ,  "off"    , ...
-                         "Image2Show_color"        , "Colored" , ...  % "Colored"/"Gray"
-                         "Resolution"              , 100       , ... 
-                         "blurring"                ,  "off"    , ...
-                         "blurring_options"        , struct()  ...
+        Config = struct( "histeq_image"                   ,  "off"    , ...
+                         "Image2Show_color"               , "Colored" , ...  % "Colored"/"Gray"
+                         "Resolution"                     , 100       , ... 
+                         "blurring"                       ,  "off"    , ...
+                         "blurring_options"               , struct()  , ... 
+                         "BackgroundSubstractionRadius"   , 0   ...
                        );
         
         
@@ -70,6 +71,7 @@ classdef ImagesManagerClass < handle
                 kwargs.Image2Show_color  %OriginalImage /GrayImage
                 kwargs.Resolution
                 kwargs.blurring
+                kwargs.BackgroundSubstractionRadius
                 % Extra options
                 kwargs.options
             end % arguments
@@ -175,12 +177,16 @@ classdef ImagesManagerClass < handle
             end
             
             % GrayImage -> GrayImage :
+            if obj.Config.BackgroundSubstractionRadius > 0
+                obj.GreyImage_Processed = ImSubstructBackground( obj.GreyImage_Processed , obj.Config.BackgroundSubstractionRadius );
+            end
             if  OnOff2Logical( obj.Config.histeq_image)
                 obj.GreyImage_Processed  = histeq( obj.GreyImage_Processed );
             end            
             if OnOff2Logical( obj.Config.blurring )
                 obj.GreyImage_Processed  = ImageBlur( obj.GreyImage_Processed , obj.Config.blurring_options );
             end
+            
             
             %  ? -> Image2Show : 
             obj.Image2Show = obj.get("Image2Show_Origin");

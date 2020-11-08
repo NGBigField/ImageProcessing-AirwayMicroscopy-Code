@@ -211,8 +211,10 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             location = round(location);
             y_pointer = location(1);
             x_pointer = location(2);
-            for i = 1 : length(obj.Masks_cell)
-                Mask = obj.Masks_cell{i};
+            MasksCellArrayAtCurrentResolution = obj.resized_masks_cell_array(obj.Masks_cell,"CurrentResolution","full");            
+            
+            for i = 1 : length(MasksCellArrayAtCurrentResolution)
+                Mask = MasksCellArrayAtCurrentResolution{i};
                 [x_mask,y_mask] = find(Mask==1);
                 if any(x_pointer == x_mask & y_pointer == y_mask )
                     mask_index = i;
@@ -224,7 +226,9 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             
         end
         function [] =  remove_mask(obj , mask_index)
+            MaskToRemove = full(  obj.Masks_cell{mask_index} ); 
             obj.Masks_cell(mask_index) = [];
+            obj.Masks_Total = obj.Masks_Total & ~MaskToRemove;
         end
         function [TotalMask] = total_mask(obj , ResolutionStr)
             arguments
@@ -260,8 +264,9 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
                 return
             end
             
-            TotalMask = obj.total_mask();
-            obj.ImagesManager.mask_over_image(TotalMask , "FromScratch");            
+            TotalMask = obj.total_mask("CurrentResolution");
+            obj.ImagesManager.mask_over_image(TotalMask , "FromScratch");     
+            obj.ImagesManager.show_image();
         end
         function [resized_mask_cell_array] = resized_masks_cell_array(obj , mask_cell_array ,  resizeStr , matrixTypeStr)
             %function [resized_mask_cell_array] = resized_masks_cell_array(obj , mask_cell_array ,  resizeStr , matrixTypeStr)
@@ -357,7 +362,9 @@ classdef SegmentationAlgoClass  < handle % < matlab.mixin.SetGet
             for frameIndex = 1 : MaxIterationNum/IterationsPerFrame
                 
                 %Go over all masks:
-                if checkStopMatlabBuiltIn(MasksCellArray , is_maskFinished)
+                [isStop, reasonStr] = checkStopMatlabBuiltIn(MasksCellArray , is_maskFinished);
+                if isStop
+                    disp("MatlabBuiltIn Finished. Reason: " + reasonStr);
                     break                    
                 end
                 % Create a mask that is the results of all the masks in the current frame:
@@ -514,15 +521,17 @@ function OutputMatrix = SparseOrFull(InputMatrix , matrixTypeStr)
     
 end
 
-function is_stop = checkStopMatlabBuiltIn(MasksCellArray , is_maskFinishedArray)
-    
-    is_stop = false;
+function [is_stop, reasonStr] = checkStopMatlabBuiltIn(MasksCellArray , is_maskFinishedArray)        
     
     if isempty(MasksCellArray)
         is_stop = true;
-    end
-    if all(is_maskFinishedArray)
+        reasonStr = "MasksCellArray is empty";
+    elseif all(is_maskFinishedArray)
         is_stop = true;
+        reasonStr = "All " + string( length(MasksCellArray) ) + " masks have finished evolving.";
+    else
+        is_stop = false;
+        reasonStr = string.empty(0);
     end
     
 end

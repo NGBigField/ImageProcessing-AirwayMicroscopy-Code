@@ -133,7 +133,9 @@ classdef WindowsManagerClass  < handle
             
             % Record Image if needed:
             if obj.Recording.isRecording
-                Im = Im ./ max(Im,[],'all');
+                % Adjust Frame
+                Im = obj.AdjustFrame4VideoWriter(Im);
+                % record Frame:
                 obj.Recording.writerObj.writeVideo( Im );
             end
         end
@@ -197,5 +199,21 @@ classdef WindowsManagerClass  < handle
         end % function update_mask_cover_percentage()
     end % methods (Access = public)
     
+    methods (Access = protected)
+       %% Video Writer Functions: 
+       
+       function Im = AdjustFrame4VideoWriter(obj,Im)
+           % Correct Image size:
+           requiredImSize = [obj.Recording.writerObj.Height, obj.Recording.writerObj.Width];
+           incomingImSize = [size(Im,1) , size(Im,2)];
+           if any(requiredImSize ~= incomingImSize)
+               Im = imresize(Im, requiredImSize);
+           end
+           % Correct Pixel Values:
+           Im = Im ./ max(Im,[],'all');           
+       end % AdjustFrame4VideoWriter
+       
+    end
 end % classdef
+
 
