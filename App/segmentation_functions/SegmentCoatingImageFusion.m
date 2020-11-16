@@ -1,5 +1,15 @@
-function  [Images , figH] = SegmentCoatingImageFusion(originalIm , Config , Settings)
+function  [Images , figH] = SegmentCoatingImageFusion(originalIm , Config , Settings , options)
       
+    arguments
+       originalIm
+       Config
+       Settings
+       
+       options.isPlot logical = true
+        
+    end
+
+
     Images = struct;
     
     
@@ -108,16 +118,25 @@ function  [Images , figH] = SegmentCoatingImageFusion(originalIm , Config , Sett
     
     CannyExpandedWithGrayAgreement = FilteredSmallClosedCannyIm | AgreementIm;
     
+    
+    GrainFiltering_Black = Config.Fusion.GrainFiltering_BlackRadius_post;
+    if ~isempty( GrainFiltering_WhiteRadius )
+        CannyExpandedWithGrayAgreementFiltered   = ~bwpropfilt(~CannyExpandedWithGrayAgreement , "ConvexArea", [GrainFiltering_Black,inf] ); 
+    else
+        CannyExpandedWithGrayAgreementFiltered   = CannyExpandedWithGrayAgreement;
+    end
+    
     %% Epilog:
     
     Images.originalIm =originalIm;
     Images.grayHisteqIm = grayHisteqIm;
+    Images.canny = CannyIm;
     Images.SegmentedBWIm = CannyExpandedWithGrayAgreement;
+    Images.SegmentedBWImFiltered = CannyExpandedWithGrayAgreementFiltered;
     
-    
-    if Settings.isShowMontage
-        ImCell      = {originalIm     ,  grayHisteqIm            , Gmag                    , CannyIm , FilteredCanny   , smallClosedCannyIm                                         , FilteredSmallClosedCannyIm    ,  bigClosedCannyIm                                        , FilteredBigClosedCannyIm   , ExpansionFromSmallToBig   , GrayLevelThresholdingIm  , closedThresholding   , AgreementIm                                          , CannyExpandedWithGrayAgreement};
-        TitlesArray = ["Original"     , "Histogram Equalization" , "Gmag = sobel magnitude", "Canny" , "FilteredCanny" , "Closed canny"+newline+ "radius="+string(smallCloseRadius) , "Filtered Small Closed Canny" , "Closed canny"+newline+ "radius="+string(bigCloseRadius) ,"Filtered Big Closed Canny" , "Close Expansion"         , "Gray Thresholding"      , "closedThresholding" , "Agreement between Close Expansion And Thresholding" , "Expansion with Gray Agreement"];
+    if Settings.isShowMontage && options.isPlot
+        ImCell      = {originalIm     ,  grayHisteqIm            , Gmag                    , CannyIm , smallClosedCannyIm    , FilteredSmallClosedCannyIm    ,  bigClosedCannyIm   , FilteredBigClosedCannyIm   , ExpansionFromSmallToBig   , GrayLevelThresholdingIm  , closedThresholding    , AgreementIm                        , CannyExpandedWithGrayAgreement , CannyExpandedWithGrayAgreementFiltered};
+        TitlesArray = ["Original"     , "Histogram Equalization" , "Gmag = sobel magnitude", "Canny" , "Small Closed canny"  , "Filtered Small Closed Canny" , "Big Closed canny"  ,"Filtered Big Closed Canny" , "Close Expansion"         , "Gray Thresholding"      , "closed Thresholding" , "Expansion-Thresholding Agreement" , "Expansion + Agreement"        , "Filtered Final"                      ];
         
         figH = figure();
         [SubPlotHandleArray , options] = LinkedMontage( ImCell , TitlesArray , "Layout" , [3 inf ] , "FigureHandle" , figH , "ImageRelativeSize", 0.9);

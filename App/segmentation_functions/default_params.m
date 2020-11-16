@@ -69,10 +69,10 @@ function [Config] = default_params( ImageType )
        case "Flask"
            Config.General.ChosenAlgorithm           =  AvailableAlgorithms.MatlabBuiltIn;
            Config.MatlabBuiltIn.SmoothFactor        =  1.1;
-           Config.MatlabBuiltIn.ContractionBias     = -0.4;
+           Config.MatlabBuiltIn.ContractionBias     = -1.4;
            Config.MatlabBuiltIn.Method              =  AvailableAlgorithms.MatlabBuiltInMethods.Edge;
            Config.MatlabBuiltIn.MaxNumIteration     =  200;
-           Config.MatlabBuiltIn.IterationsPerFrame  =  10;
+           Config.MatlabBuiltIn.IterationsPerFrame  =  5;
            Config.MatlabBuiltIn.MasksRecombination  =  true;
        case "Coating"
            Config.General.ChosenAlgorithm   =  AvailableAlgorithms.CannyThresholdingFusion;

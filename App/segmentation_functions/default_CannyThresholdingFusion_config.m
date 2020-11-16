@@ -47,7 +47,7 @@ function [Config , Settings ] = default_CannyThresholdingFusion_config(ImageType
     %% Config.Fusion:
   
     Config.Fusion.isOn = true;
-    
+    Config.Fusion.GrainFiltering_BlackRadius_post = 1000;
     
     
     %% Params
