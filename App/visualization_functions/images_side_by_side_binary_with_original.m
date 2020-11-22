@@ -52,6 +52,13 @@ function [] = images_side_by_side_binary_with_original( Original_Im,BW_Im , Imag
         % Don't save
     else
         saveFolder   = Paths.Results.Coating.OurResults.SegmentationImages.Path;
+        
+        % make sure such a folder exists:
+        if ~exist( saveFolder,'dir')
+            [filepath,name,~] = fileparts(saveFolder);
+            mkdir( filepath, name)
+        end
+        
         saveFullPath = saveFolder + filesep + DayAndTypeString  + ".tif";
         saveas(FigH,saveFullPath)
     end

@@ -17,7 +17,8 @@ for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
     
     % for each coating type:
     for coatingTypeIndex = 1 : length( dayStruct.subDirectories )       
-        coatingTypeStruct = dayStruct.( dayStruct.subDirectories{coatingTypeIndex} );
+        coatingTypeStruct = dayStruct.( dayStruct.subDirectories{coatingTypeIndex} );        
+        
         % randomaly choose an image index to show later: 
         ImageIndex2ShowAndSave = randi( length(coatingTypeStruct.Images ) );
 
@@ -27,8 +28,8 @@ for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
             % read Image:
             Im = imread( coatingTypeStruct.Images{imIndex} );
             % calc Cell-Coverage:            
-            [SegmentResults , ~]  = SegmentCoatingImageFusion(Im , Config.CannyThresholdingFusion , PlotSettings);
-            SegmentedBWIm = SegmentResults.SegmentedBWIm;
+            [SegmentResults , ~]  = SegmentCoatingImageFusion(Im , Config.CannyThresholdingFusion , PlotSettings , "isPlot" , false );
+            SegmentedBWIm = SegmentResults.SegmentedBWImFiltered;
             cell_coverage = CalcWhitePixelsPercentage(SegmentedBWIm);
             % save Data:
             Data.(dayStruct.key).(coatingTypeStruct.key) = [ Data.(dayStruct.key).(coatingTypeStruct.key)  , cell_coverage];
