@@ -9,7 +9,9 @@ Data = DataStruct();
 [Config ] = default_params("Coating");
 PlotSettings = Config.CannyThresholdingFusion.PlotSettings;
 PlotSettings.howManyImages2Save = "1 per type per day" ; % "All"/"1 per type per day"/"Only first Image";
+PlotSettings.isOnlyCount = true;
 
+count = 0;
 
 % for each day:
 for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
@@ -25,25 +27,33 @@ for dayIndex = 1 : length( Paths.CoatingDirectory.subDirectories )
         % for each image:
         for imIndex = 1 : length(coatingTypeStruct.Images )
             
-            % read Image:
-            Im = imread( coatingTypeStruct.Images{imIndex} );
-            % calc Cell-Coverage:            
-            [SegmentResults , ~]  = SegmentCoatingImageFusion(Im , Config.CannyThresholdingFusion , PlotSettings , "isPlot" , false );
-            SegmentedBWIm = SegmentResults.SegmentedBWImFiltered;
-            cell_coverage = CalcWhitePixelsPercentage(SegmentedBWIm);
-            % save Data:
-            Data.(dayStruct.key).(coatingTypeStruct.key) = [ Data.(dayStruct.key).(coatingTypeStruct.key)  , cell_coverage];
-            % Plot images side by side if we're on the lucky number:
-            images_side_by_side_binary_with_original(Im,SegmentedBWIm,imIndex,ImageIndex2ShowAndSave,  coatingTypeStruct , dayStruct , cell_coverage , Paths , PlotSettings);
-            
-            
+            if PlotSettings.isOnlyCount
+                count = count + 1;
+            else
+                % read Image:
+                Im = imread( coatingTypeStruct.Images{imIndex} );
+                % calc Cell-Coverage:
+                [SegmentResults , ~]  = SegmentCoatingImageFusion(Im , Config.CannyThresholdingFusion , PlotSettings , "isPlot" , false );
+                SegmentedBWIm = SegmentResults.SegmentedBWImFiltered;
+                cell_coverage = CalcWhitePixelsPercentage(SegmentedBWIm);
+                % save Data:
+                Data.(dayStruct.key).(coatingTypeStruct.key) = [ Data.(dayStruct.key).(coatingTypeStruct.key)  , cell_coverage];
+                % Plot images side by side if we're on the lucky number:
+                images_side_by_side_binary_with_original(Im,SegmentedBWIm,imIndex,ImageIndex2ShowAndSave,  coatingTypeStruct , dayStruct , cell_coverage , Paths , PlotSettings);
+            end
+                                    
         end % imIndex
     end  % coatingTypeIndex
 end % dayIndex
 
-saveFolder = Paths.Results.Coating.OurResults.Path ;
-save(saveFolder+filesep+"Data" , "Data");
 
+if PlotSettings.isOnlyCount
+    disp("Only counting. Result:")
+    disp("count = " + string(count) );
+else
+    saveFolder = Paths.Results.Coating.OurResults.Path ;
+    save(saveFolder+filesep+"Data" , "Data");
+end
 %% create bar Graph
 
 saveFolder = Paths.Results.Coating.OurResults.Path ;
