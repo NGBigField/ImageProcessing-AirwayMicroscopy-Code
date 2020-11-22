@@ -23,11 +23,15 @@ elseif (tm~=0 && tm~=1)
 end
 IM=mat2gray(IM);
 if tm==0
+    % mean filter
     mIM=imfilter(IM,fspecial('average',ws),'replicate');
 else
+    % median filter
     mIM=medfilt2(IM,[ws ws]);
 end
+% C is the offset threshold:
 sIM=mIM-IM-C;
+% binarize around 0:
 bw_mask=imbinarize(sIM,0);
 bw_mask=imcomplement(bw_mask);
 
