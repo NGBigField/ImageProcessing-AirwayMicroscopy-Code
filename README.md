@@ -3,7 +3,7 @@
 
 ## About:
 
-This is a MATLAB app designed for the segmentation of living cells.
+This is a MATLAB app designed for the segmentation of living cells as seen through various microscopic techniques.
 ## Creators:
 Tomer Arama, Nir Gutman
 ## Background
